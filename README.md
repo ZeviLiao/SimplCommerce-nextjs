@@ -1,98 +1,163 @@
 # SimplCommerce Next.js
 
-This project is inspired by [SimplCommerce](https://github.com/simplcommerce/SimplCommerce), reimplementing its core e-commerce features using a modern Next.js tech stack.
+A modern e-commerce platform built with Next.js 16, inspired by [SimplCommerce](https://github.com/simplcommerce/SimplCommerce).
+
+## Features
+
+- **Admin Portal**: Product/category/brand management, order processing
+- **Storefront**: Product catalog, shopping cart, checkout, wishlist
+- **Authentication**: NextAuth.js with credentials provider
+- **Responsive UI**: Tailwind CSS 4 with shadcn/ui components
 
 ## Tech Stack
 
-| Category | Technologies |
-|----------|-------------|
-| Frontend | Next.js 16, React 19, TypeScript |
-| UI | Tailwind CSS 4, shadcn/ui, Radix UI |
-| Backend | Hono, Next.js API Routes |
-| Database | PostgreSQL, Drizzle ORM |
-| State | Zustand |
-| DevTools | Biome, Turbopack, Husky |
+| Layer | Technologies |
+|-------|-------------|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript, React 19 |
+| Database | PostgreSQL + Drizzle ORM |
+| Styling | Tailwind CSS 4, Radix UI |
+| Auth | NextAuth.js v5 |
+| State | Zustand (client), React Context |
+| Validation | Zod |
+| Dev Tools | Biome, Turbopack |
 
 ## Architecture
 
-**Layered architecture** following Next.js App Router conventions:
+```
+app/
+├── (admin)/         # Admin dashboard routes
+├── (storefront)/    # Public store routes
+└── api/            # API endpoints
 
-| Layer | Purpose | Examples |
-|-------|---------|----------|
-| **app/** | Routes & layouts | `(admin)/`, `(storefront)/`, `api/` |
-| **components/** | UI components | `admin/`, `products/`, `checkout/`, `ui/` |
-| **actions/** | Server actions | `admin/products.ts`, `auth.ts`, `checkout.ts` |
-| **db/** | Database | `schema/`, `migrations/` |
-| **lib/** | Utilities | `auth/`, `validators/` |
-| **stores/** | Client state | `cart-store.ts` |
+components/
+├── admin/          # Admin-specific components
+├── products/       # Product display components
+├── checkout/       # Checkout flow components
+└── ui/            # Shared UI components (shadcn/ui)
 
-**Key patterns:**
-- Server Components for data fetching
-- Server Actions for mutations
-- Route Groups for layout separation (`(admin)`, `(storefront)`)
-- Shared UI components with shadcn/ui
+actions/            # Server Actions (mutations)
+db/schema/         # Drizzle schema definitions
+lib/               # Utilities, validators, auth config
+stores/            # Zustand stores
+```
+
+**Design Patterns:**
+- Server Components for data fetching (default)
+- Server Actions for mutations (forms, data updates)
+- Client Components only when needed (interactivity, hooks)
+- Route Groups for layout isolation
 
 ## Getting Started
 
-### Prerequisites
-- Node.js 20+
-- pnpm
-- PostgreSQL (or use Docker)
+**Prerequisites:** Node.js 20+, pnpm, Docker
 
-### Quick Setup
+### 1. Clone & Install
 
 ```bash
-# 1. Clone and install
 git clone https://github.com/ZeviLiao/SimplCommerce-nextjs.git
 cd SimplCommerce-nextjs
 pnpm install
+```
 
-# 2. Setup PostgreSQL with Docker
-docker run -d \
-  --name simplcommerce-db \
-  -e POSTGRES_USER=postgres \
+### 2. Database Setup
+
+```bash
+# Start PostgreSQL container
+docker run -d --name simplcommerce-db \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=simplcommerce \
   -p 5432:5432 \
   postgres:16
 
-# 3. Configure environment
+# Verify database is running
+docker ps | grep simplcommerce-db
+```
+
+### 3. Environment Configuration
+
+```bash
 cp .env.example .env.local
-# Edit .env.local and set:
-#   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/simplcommerce
-#   AUTH_SECRET=<run: openssl rand -base64 32>
-#   AUTH_URL=http://localhost:3000
+```
 
-# 4. Initialize database
-pnpm db:push
-pnpm db:seed
+Edit `.env.local` and set required variables:
 
-# 5. Start dev server
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/simplcommerce
+AUTH_SECRET=your-secret-here    # Generate: openssl rand -base64 32
+```
+
+### 4. Initialize Database
+
+```bash
+pnpm db:push    # Apply schema
+pnpm db:seed    # Load sample data
+```
+
+### 5. Run Development Server
+
+```bash
 pnpm dev
 ```
 
-### Docker Database Commands
+Open [http://localhost:3000](http://localhost:3000)
 
-```bash
-docker start simplcommerce-db   # Start database
-docker stop simplcommerce-db    # Stop database
-docker logs simplcommerce-db    # View logs
-docker exec -it simplcommerce-db psql -U postgres -d simplcommerce  # Connect to DB
-```
-
-### Test Accounts
-
+**Login:**
 - Admin: `admin@example.com` / `admin123`
 - Customer: `customer@example.com` / `customer123`
 
-### Common Commands
+## Development
+
+### Database
 
 ```bash
-pnpm dev          # Start development server
-pnpm build        # Build for production
-pnpm db:push      # Push schema changes
-pnpm db:seed      # Seed database with sample data
-pnpm db:studio    # Open database GUI
+pnpm db:studio       # Open Drizzle Studio
+pnpm db:push         # Push schema changes
+pnpm db:generate     # Generate migrations
+```
+
+**Docker Commands:**
+
+```bash
+docker start simplcommerce-db
+docker stop simplcommerce-db
+docker logs simplcommerce-db
+docker exec -it simplcommerce-db psql -U postgres -d simplcommerce
+```
+
+### Code Quality
+
+```bash
+pnpm lint            # Check code issues
+pnpm lint:fix        # Auto-fix issues
+pnpm format          # Format code
+pnpm build           # Production build
+```
+
+## Troubleshooting
+
+**Port 5432 already in use:**
+```bash
+# Use a different port
+docker run -d --name simplcommerce-db \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=simplcommerce \
+  -p 5433:5432 \
+  postgres:16
+
+# Update DATABASE_URL to use port 5433
+```
+
+**Database connection failed:**
+```bash
+# Check if container is running
+docker ps
+
+# Check logs
+docker logs simplcommerce-db
+
+# Restart container
+docker restart simplcommerce-db
 ```
 
 ## License
