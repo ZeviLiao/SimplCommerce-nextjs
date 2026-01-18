@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 import { db } from "./index";
 import * as schema from "./schema";
 
@@ -316,7 +316,7 @@ async function seed() {
 		{ productId: products[4].id, categoryId: electronics.id },
 	]);
 
-	// 8. Create/check test users
+	// 8. Create/check test users using Better Auth API
 	console.log("Checking test users...");
 	const existingAdmin = await db.query.user.findFirst({
 		where: eq(schema.user.email, "admin@example.com"),
@@ -324,26 +324,26 @@ async function seed() {
 
 	if (!existingAdmin) {
 		console.log("Creating admin user...");
-		const adminPassword = await hash("admin123", 10);
-		const adminId = crypto.randomUUID();
+		try {
+			// Use Better Auth API to create user with proper password hashing
+			const result = await auth.api.signUpEmail({
+				body: {
+					email: "admin@example.com",
+					password: "admin123",
+					name: "Admin User",
+				},
+			});
 
-		// Create user record
-		await db.insert(schema.user).values({
-			id: adminId,
-			email: "admin@example.com",
-			name: "Admin User",
-			role: "admin",
-			emailVerified: true,
-		});
-
-		// Create account record with password
-		await db.insert(schema.account).values({
-			id: crypto.randomUUID(),
-			userId: adminId,
-			accountId: "admin@example.com",
-			providerId: "credential",
-			password: adminPassword,
-		});
+			// Update user role to admin
+			if (result?.user?.id) {
+				await db
+					.update(schema.user)
+					.set({ role: "admin", emailVerified: true })
+					.where(eq(schema.user.id, result.user.id));
+			}
+		} catch (error) {
+			console.error("Error creating admin user:", error);
+		}
 	}
 
 	const existingCustomer = await db.query.user.findFirst({
@@ -352,26 +352,18 @@ async function seed() {
 
 	if (!existingCustomer) {
 		console.log("Creating customer user...");
-		const customerPassword = await hash("customer123", 10);
-		const customerId = crypto.randomUUID();
-
-		// Create user record
-		await db.insert(schema.user).values({
-			id: customerId,
-			email: "customer@example.com",
-			name: "Test Customer",
-			role: "customer",
-			emailVerified: true,
-		});
-
-		// Create account record with password
-		await db.insert(schema.account).values({
-			id: crypto.randomUUID(),
-			userId: customerId,
-			accountId: "customer@example.com",
-			providerId: "credential",
-			password: customerPassword,
-		});
+		try {
+			// Use Better Auth API to create user with proper password hashing
+			await auth.api.signUpEmail({
+				body: {
+					email: "customer@example.com",
+					password: "customer123",
+					name: "Test Customer",
+				},
+			});
+		} catch (error) {
+			console.error("Error creating customer user:", error);
+		}
 	}
 
 	console.log("✅ Seeding completed!");

@@ -87,6 +87,9 @@ export type AuthUser = {
 	image?: string | null;
 	createdAt: Date;
 	updatedAt: Date;
+	banned: boolean;
+	banReason?: string | null;
+	banExpires?: Date | null;
 	role: "admin" | "vendor" | "customer";
 	phone?: string | null;
 	culture?: string | null;
