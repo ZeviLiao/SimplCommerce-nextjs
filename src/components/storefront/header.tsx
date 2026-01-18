@@ -15,9 +15,6 @@ export async function Header() {
 					<span>SimplCommerce</span>
 				</Link>
 				<nav className="hidden md:flex gap-6 text-sm font-medium">
-					<Link href="/products" className="transition-colors hover:text-primary">
-						Products
-					</Link>
 					{categories.map((category) => (
 						<Link
 							key={category.id}

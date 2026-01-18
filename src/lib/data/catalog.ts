@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, products } from "@/db/schema";
 
@@ -12,8 +12,10 @@ export async function getHomepageCategories() {
 					eq(categories.isPublished, true),
 					eq(categories.isDeleted, false),
 					isNull(categories.parentId),
+					eq(categories.includeInMenu, true),
 				),
-			);
+			)
+			.orderBy(asc(categories.displayOrder));
 	} catch (error) {
 		console.error("Failed to fetch homepage categories:", error);
 		return [];
