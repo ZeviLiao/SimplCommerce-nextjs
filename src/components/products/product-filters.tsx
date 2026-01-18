@@ -51,7 +51,7 @@ export function ProductFilters({
 			params.delete("search");
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`);
+		router.push(`/products?${params.toString()}`, { scroll: false });
 	};
 
 	const handleParentCategoryChange = (category: Category, checked: boolean) => {
@@ -85,7 +85,7 @@ export function ProductFilters({
 			params.delete("category");
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`);
+		router.push(`/products?${params.toString()}`, { scroll: false });
 	};
 
 	const handleChildCategoryChange = (
@@ -121,7 +121,7 @@ export function ProductFilters({
 			params.delete("category");
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`);
+		router.push(`/products?${params.toString()}`, { scroll: false });
 	};
 
 	const getParentCheckboxState = (category: Category): boolean | "indeterminate" => {
@@ -157,7 +157,7 @@ export function ProductFilters({
 			params.delete("brand");
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`);
+		router.push(`/products?${params.toString()}`, { scroll: false });
 	};
 
 	const clearFilters = () => {

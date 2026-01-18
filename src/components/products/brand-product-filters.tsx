@@ -72,7 +72,7 @@ export function BrandProductFilters({
 		}
 		params.delete("page");
 
-		router.push(`/brands/${brandSlug}?${params.toString()}`);
+		router.push(`/brands/${brandSlug}?${params.toString()}`, { scroll: false });
 	};
 
 	const handlePriceChange = () => {
@@ -91,7 +91,7 @@ export function BrandProductFilters({
 		}
 
 		params.delete("page");
-		router.push(`/brands/${brandSlug}?${params.toString()}`);
+		router.push(`/brands/${brandSlug}?${params.toString()}`, { scroll: false });
 	};
 
 	return (

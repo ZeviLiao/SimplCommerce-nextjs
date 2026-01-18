@@ -58,7 +58,7 @@ export function CategoryProductFilters({
 		}
 		params.delete("page");
 
-		router.push(`/categories/${categorySlug}?${params.toString()}`);
+		router.push(`/categories/${categorySlug}?${params.toString()}`, { scroll: false });
 	};
 
 	const handlePriceChange = () => {
@@ -77,7 +77,7 @@ export function CategoryProductFilters({
 		}
 
 		params.delete("page");
-		router.push(`/categories/${categorySlug}?${params.toString()}`);
+		router.push(`/categories/${categorySlug}?${params.toString()}`, { scroll: false });
 	};
 
 	return (
