@@ -1,11 +1,11 @@
 "use server";
 
-import { hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { AuthError } from "next-auth";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { signIn, signOut } from "@/lib/auth";
+import { auth, signIn, signOut } from "@/lib/auth";
 
 export async function registerUser(formData: FormData) {
 	const name = formData.get("name") as string;
@@ -86,4 +86,40 @@ export async function loginUser(formData: FormData) {
 
 export async function logoutUser() {
 	await signOut({ redirect: false });
+}
+
+export async function changePassword(oldPassword: string, newPassword: string) {
+	try {
+		const session = await auth();
+
+		if (!session?.user?.email) {
+			return { success: false, error: "Not authenticated" };
+		}
+
+		// Get user from database
+		const user = await db.query.users.findFirst({
+			where: eq(users.email, session.user.email),
+		});
+
+		if (!user || !user.password) {
+			return { success: false, error: "User not found or no password set" };
+		}
+
+		// Verify old password
+		const isValid = await compare(oldPassword, user.password);
+		if (!isValid) {
+			return { success: false, error: "Current password is incorrect" };
+		}
+
+		// Hash new password
+		const hashedPassword = await hash(newPassword, 10);
+
+		// Update password
+		await db.update(users).set({ password: hashedPassword }).where(eq(users.id, user.id));
+
+		return { success: true };
+	} catch (error) {
+		console.error("Change password error:", error);
+		return { success: false, error: "Failed to change password" };
+	}
 }

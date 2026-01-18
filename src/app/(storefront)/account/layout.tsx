@@ -6,6 +6,7 @@ const accountNavigation = [
 	{ name: "Overview", href: "/account" },
 	{ name: "Profile", href: "/account/profile" },
 	{ name: "Addresses", href: "/account/addresses" },
+	{ name: "Change Password", href: "/account/change-password" },
 	{ name: "Orders", href: "/account/orders" },
 	{ name: "Wishlist", href: "/account/wishlist" },
 ];
