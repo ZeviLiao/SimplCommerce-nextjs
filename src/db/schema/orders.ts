@@ -12,7 +12,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { products } from "./catalog";
-import { users, vendors } from "./users";
+import { user, vendors } from "./users";
 
 // Enums
 export const orderStatusEnum = pgEnum("order_status", [
@@ -45,9 +45,9 @@ export const shipmentStatusEnum = pgEnum("shipment_status", [
 // Cart Items
 export const cartItems = pgTable("cart_items", {
 	id: uuid("id").defaultRandom().primaryKey(),
-	userId: uuid("user_id")
+	userId: text("user_id")
 		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
+		.references(() => user.id, { onDelete: "cascade" }),
 	productId: uuid("product_id")
 		.notNull()
 		.references(() => products.id, { onDelete: "cascade" }),
@@ -61,9 +61,9 @@ export const cartItems = pgTable("cart_items", {
 export const wishlistItems = pgTable(
 	"wishlist_items",
 	{
-		userId: uuid("user_id")
+		userId: text("user_id")
 			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
+			.references(() => user.id, { onDelete: "cascade" }),
 		productId: uuid("product_id")
 			.notNull()
 			.references(() => products.id, { onDelete: "cascade" }),
@@ -76,9 +76,9 @@ export const wishlistItems = pgTable(
 export const orders = pgTable("orders", {
 	id: uuid("id").defaultRandom().primaryKey(),
 	orderNumber: text("order_number").unique().notNull(),
-	customerId: uuid("customer_id")
+	customerId: text("customer_id")
 		.notNull()
-		.references(() => users.id),
+		.references(() => user.id),
 	vendorId: uuid("vendor_id").references(() => vendors.id),
 	status: orderStatusEnum("status").default("new").notNull(),
 	couponCode: text("coupon_code"),
@@ -97,8 +97,8 @@ export const orders = pgTable("orders", {
 	orderNote: text("order_note"),
 	parentId: uuid("parent_id"),
 	isMasterOrder: boolean("is_master_order").default(false).notNull(),
-	createdById: uuid("created_by_id").references(() => users.id),
-	updatedById: uuid("updated_by_id").references(() => users.id),
+	createdById: text("created_by_id").references(() => user.id),
+	updatedById: text("updated_by_id").references(() => user.id),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -130,7 +130,7 @@ export const orderHistory = pgTable("order_history", {
 	oldStatus: orderStatusEnum("old_status"),
 	newStatus: orderStatusEnum("new_status").notNull(),
 	note: text("note"),
-	createdById: uuid("created_by_id").references(() => users.id),
+	createdById: text("created_by_id").references(() => user.id),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -188,7 +188,7 @@ export const stockHistory = pgTable("stock_history", {
 		.references(() => warehouses.id, { onDelete: "cascade" }),
 	adjustedQuantity: integer("adjusted_quantity").notNull(),
 	note: text("note"),
-	createdById: uuid("created_by_id").references(() => users.id),
+	createdById: text("created_by_id").references(() => user.id),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -202,7 +202,7 @@ export const shipments = pgTable("shipments", {
 	vendorId: uuid("vendor_id").references(() => vendors.id),
 	trackingNumber: text("tracking_number"),
 	status: shipmentStatusEnum("status").default("pending").notNull(),
-	createdById: uuid("created_by_id").references(() => users.id),
+	createdById: text("created_by_id").references(() => user.id),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -247,9 +247,9 @@ export const cartRuleUsages = pgTable("cart_rule_usages", {
 		.notNull()
 		.references(() => cartRules.id, { onDelete: "cascade" }),
 	couponCode: text("coupon_code"),
-	userId: uuid("user_id")
+	userId: text("user_id")
 		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
+		.references(() => user.id, { onDelete: "cascade" }),
 	orderId: uuid("order_id").references(() => orders.id),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -278,9 +278,9 @@ export const taxRates = pgTable("tax_rates", {
 
 // Relations
 export const cartItemsRelations = relations(cartItems, ({ one }) => ({
-	user: one(users, {
+	user: one(user, {
 		fields: [cartItems.userId],
-		references: [users.id],
+		references: [user.id],
 	}),
 	product: one(products, {
 		fields: [cartItems.productId],
@@ -289,9 +289,9 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
 }));
 
 export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
-	user: one(users, {
+	user: one(user, {
 		fields: [wishlistItems.userId],
-		references: [users.id],
+		references: [user.id],
 	}),
 	product: one(products, {
 		fields: [wishlistItems.productId],
@@ -300,9 +300,9 @@ export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
 }));
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
-	customer: one(users, {
+	customer: one(user, {
 		fields: [orders.customerId],
-		references: [users.id],
+		references: [user.id],
 		relationName: "orderCustomer",
 	}),
 	vendor: one(vendors, {
@@ -315,14 +315,14 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
 		relationName: "orderParentChild",
 	}),
 	children: many(orders, { relationName: "orderParentChild" }),
-	createdBy: one(users, {
+	createdBy: one(user, {
 		fields: [orders.createdById],
-		references: [users.id],
+		references: [user.id],
 		relationName: "orderCreatedBy",
 	}),
-	updatedBy: one(users, {
+	updatedBy: one(user, {
 		fields: [orders.updatedById],
-		references: [users.id],
+		references: [user.id],
 		relationName: "orderUpdatedBy",
 	}),
 	items: many(orderItems),
@@ -348,9 +348,9 @@ export const orderHistoryRelations = relations(orderHistory, ({ one }) => ({
 		fields: [orderHistory.orderId],
 		references: [orders.id],
 	}),
-	createdBy: one(users, {
+	createdBy: one(user, {
 		fields: [orderHistory.createdById],
-		references: [users.id],
+		references: [user.id],
 	}),
 }));
 
@@ -391,9 +391,9 @@ export const stockHistoryRelations = relations(stockHistory, ({ one }) => ({
 		fields: [stockHistory.warehouseId],
 		references: [warehouses.id],
 	}),
-	createdBy: one(users, {
+	createdBy: one(user, {
 		fields: [stockHistory.createdById],
-		references: [users.id],
+		references: [user.id],
 	}),
 }));
 
@@ -410,9 +410,9 @@ export const shipmentsRelations = relations(shipments, ({ one, many }) => ({
 		fields: [shipments.vendorId],
 		references: [vendors.id],
 	}),
-	createdBy: one(users, {
+	createdBy: one(user, {
 		fields: [shipments.createdById],
-		references: [users.id],
+		references: [user.id],
 	}),
 	items: many(shipmentItems),
 }));
@@ -437,9 +437,9 @@ export const cartRuleUsagesRelations = relations(cartRuleUsages, ({ one }) => ({
 		fields: [cartRuleUsages.cartRuleId],
 		references: [cartRules.id],
 	}),
-	user: one(users, {
+	user: one(user, {
 		fields: [cartRuleUsages.userId],
-		references: [users.id],
+		references: [user.id],
 	}),
 	order: one(orders, {
 		fields: [cartRuleUsages.orderId],

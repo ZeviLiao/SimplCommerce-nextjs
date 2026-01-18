@@ -10,7 +10,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { users, vendors } from "./users";
+import { user, vendors } from "./users";
 
 // Tax Classes
 export const taxClasses = pgTable("tax_classes", {
@@ -111,8 +111,8 @@ export const products = pgTable("products", {
 	metaTitle: text("meta_title"),
 	metaKeywords: text("meta_keywords"),
 	metaDescription: text("meta_description"),
-	createdById: uuid("created_by_id").references(() => users.id),
-	updatedById: uuid("updated_by_id").references(() => users.id),
+	createdById: uuid("created_by_id").references(() => user.id),
+	updatedById: uuid("updated_by_id").references(() => user.id),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
@@ -211,7 +211,7 @@ export const productPriceHistory = pgTable("product_price_history", {
 	price: decimal("price", { precision: 18, scale: 2 }).notNull(),
 	oldPrice: decimal("old_price", { precision: 18, scale: 2 }),
 	specialPrice: decimal("special_price", { precision: 18, scale: 2 }),
-	createdById: uuid("created_by_id").references(() => users.id),
+	createdById: uuid("created_by_id").references(() => user.id),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -223,7 +223,7 @@ export const reviews = pgTable("reviews", {
 		.references(() => products.id, { onDelete: "cascade" }),
 	userId: uuid("user_id")
 		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
+		.references(() => user.id, { onDelete: "cascade" }),
 	rating: integer("rating").notNull(),
 	title: text("title"),
 	comment: text("comment"),
@@ -240,7 +240,7 @@ export const reviewReplies = pgTable("review_replies", {
 		.references(() => reviews.id, { onDelete: "cascade" }),
 	userId: uuid("user_id")
 		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
+		.references(() => user.id, { onDelete: "cascade" }),
 	comment: text("comment").notNull(),
 	status: text("status").default("approved").notNull(),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
@@ -298,14 +298,14 @@ export const productsRelations = relations(products, ({ one, many }) => ({
 		fields: [products.vendorId],
 		references: [vendors.id],
 	}),
-	createdBy: one(users, {
+	createdBy: one(user, {
 		fields: [products.createdById],
-		references: [users.id],
+		references: [user.id],
 		relationName: "productCreatedBy",
 	}),
-	updatedBy: one(users, {
+	updatedBy: one(user, {
 		fields: [products.updatedById],
-		references: [users.id],
+		references: [user.id],
 		relationName: "productUpdatedBy",
 	}),
 	productCategories: many(productCategories),
@@ -388,9 +388,9 @@ export const productPriceHistoryRelations = relations(productPriceHistory, ({ on
 		fields: [productPriceHistory.productId],
 		references: [products.id],
 	}),
-	createdBy: one(users, {
+	createdBy: one(user, {
 		fields: [productPriceHistory.createdById],
-		references: [users.id],
+		references: [user.id],
 	}),
 }));
 
@@ -399,9 +399,9 @@ export const reviewsRelations = relations(reviews, ({ one, many }) => ({
 		fields: [reviews.productId],
 		references: [products.id],
 	}),
-	user: one(users, {
+	user: one(user, {
 		fields: [reviews.userId],
-		references: [users.id],
+		references: [user.id],
 	}),
 	replies: many(reviewReplies),
 }));
@@ -411,8 +411,8 @@ export const reviewRepliesRelations = relations(reviewReplies, ({ one }) => ({
 		fields: [reviewReplies.reviewId],
 		references: [reviews.id],
 	}),
-	user: one(users, {
+	user: one(user, {
 		fields: [reviewReplies.userId],
-		references: [users.id],
+		references: [user.id],
 	}),
 }));

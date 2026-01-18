@@ -1,8 +1,8 @@
 "use client";
 
+import type { Session } from "better-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { User } from "next-auth";
 import { logoutUser } from "@/actions/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface UserMenuProps {
-	user: User;
+	user: Session["user"];
 }
 
 export function UserMenu({ user }: UserMenuProps) {
@@ -30,7 +30,7 @@ export function UserMenu({ user }: UserMenuProps) {
 	const initials =
 		user.name
 			?.split(" ")
-			.map((n) => n[0])
+			.map((n: string) => n[0])
 			.join("")
 			.toUpperCase() ||
 		user.email?.[0].toUpperCase() ||
@@ -61,7 +61,7 @@ export function UserMenu({ user }: UserMenuProps) {
 				<DropdownMenuItem asChild>
 					<Link href="/account/wishlist">Wishlist</Link>
 				</DropdownMenuItem>
-				{(user as User & { role?: string }).role === "admin" && (
+				{user.role === "admin" && (
 					<>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem asChild>

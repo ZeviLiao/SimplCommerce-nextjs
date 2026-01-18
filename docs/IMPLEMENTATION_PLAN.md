@@ -35,7 +35,7 @@
 | UI | shadcn/ui + Tailwind CSS 4 | Radix UI + clsx, tailwind-merge, lucide-react |
 | State | Zustand 5 | |
 | Database | PostgreSQL + Drizzle ORM | |
-| Auth | Auth.js (NextAuth v5) | Credentials + Google + GitHub |
+| Auth | Better Auth v1.4+ | Credentials + Google + GitHub |
 | API | Server Actions 優先 | API Routes 作為備用 |
 | Linting | Biome | 只檢查 src/ |
 | Git Hooks | Husky + lint-staged | |

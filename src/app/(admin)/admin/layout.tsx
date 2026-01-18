@@ -1,10 +1,11 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin/admin-nav";
-import { auth } from "@/lib/auth";
+import { type AuthSession, auth } from "@/lib/auth";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-	const session = await auth();
+	const session = (await auth.api.getSession({ headers: await headers() })) as AuthSession | null;
 
 	if (!session?.user) {
 		redirect("/login");

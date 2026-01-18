@@ -2,12 +2,13 @@
 
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { wishlistItems } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 export async function getWishlistItems() {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session?.user?.id) return [];
 
 	const items = await db.query.wishlistItems.findMany({
@@ -22,7 +23,7 @@ export async function getWishlistItems() {
 
 export async function addToWishlist(productId: string) {
 	try {
-		const session = await auth();
+		const session = await auth.api.getSession({ headers: await headers() });
 		if (!session?.user?.id) {
 			return { success: false, error: "Not authenticated" };
 		}
@@ -51,7 +52,7 @@ export async function addToWishlist(productId: string) {
 
 export async function removeFromWishlist(productId: string) {
 	try {
-		const session = await auth();
+		const session = await auth.api.getSession({ headers: await headers() });
 		if (!session?.user?.id) {
 			return { success: false, error: "Not authenticated" };
 		}

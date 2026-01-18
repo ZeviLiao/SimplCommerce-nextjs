@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -12,7 +13,7 @@ const accountNavigation = [
 ];
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: await headers() });
 
 	if (!session?.user) {
 		redirect("/login");

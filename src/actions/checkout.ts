@@ -2,12 +2,13 @@
 
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { addresses, cartItems, orderItems, orders, userAddresses } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 export async function getCartItemsForCheckout() {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session?.user?.id) return [];
 
 	const items = await db.query.cartItems.findMany({
@@ -21,7 +22,7 @@ export async function getCartItemsForCheckout() {
 }
 
 export async function getUserAddresses() {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: await headers() });
 	if (!session?.user?.id) return [];
 
 	const userAddrs = await db.query.userAddresses.findMany({
@@ -48,7 +49,7 @@ export async function createOrder(data: {
 	orderNote?: string;
 }) {
 	try {
-		const session = await auth();
+		const session = await auth.api.getSession({ headers: await headers() });
 		if (!session?.user?.id) {
 			return { success: false, error: "Not authenticated" };
 		}

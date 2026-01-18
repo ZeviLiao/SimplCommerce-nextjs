@@ -318,35 +318,59 @@ async function seed() {
 
 	// 8. Create/check test users
 	console.log("Checking test users...");
-	const existingAdmin = await db.query.users.findFirst({
-		where: eq(schema.users.email, "admin@example.com"),
+	const existingAdmin = await db.query.user.findFirst({
+		where: eq(schema.user.email, "admin@example.com"),
 	});
 
 	if (!existingAdmin) {
 		console.log("Creating admin user...");
 		const adminPassword = await hash("admin123", 10);
-		await db.insert(schema.users).values({
+		const adminId = crypto.randomUUID();
+
+		// Create user record
+		await db.insert(schema.user).values({
+			id: adminId,
 			email: "admin@example.com",
 			name: "Admin User",
-			password: adminPassword,
 			role: "admin",
-			emailVerified: new Date(),
+			emailVerified: true,
+		});
+
+		// Create account record with password
+		await db.insert(schema.account).values({
+			id: crypto.randomUUID(),
+			userId: adminId,
+			accountId: "admin@example.com",
+			providerId: "credential",
+			password: adminPassword,
 		});
 	}
 
-	const existingCustomer = await db.query.users.findFirst({
-		where: eq(schema.users.email, "customer@example.com"),
+	const existingCustomer = await db.query.user.findFirst({
+		where: eq(schema.user.email, "customer@example.com"),
 	});
 
 	if (!existingCustomer) {
 		console.log("Creating customer user...");
 		const customerPassword = await hash("customer123", 10);
-		await db.insert(schema.users).values({
+		const customerId = crypto.randomUUID();
+
+		// Create user record
+		await db.insert(schema.user).values({
+			id: customerId,
 			email: "customer@example.com",
 			name: "Test Customer",
-			password: customerPassword,
 			role: "customer",
-			emailVerified: new Date(),
+			emailVerified: true,
+		});
+
+		// Create account record with password
+		await db.insert(schema.account).values({
+			id: crypto.randomUUID(),
+			userId: customerId,
+			accountId: "customer@example.com",
+			providerId: "credential",
+			password: customerPassword,
 		});
 	}
 

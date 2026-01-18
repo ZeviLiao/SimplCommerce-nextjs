@@ -1,12 +1,13 @@
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { type AuthSession, auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
 	try {
-		const session = await auth();
+		const session = (await auth.api.getSession({ headers: await headers() })) as AuthSession | null;
 
 		// Check if user is admin
 		if (!session?.user || session.user.role !== "admin") {

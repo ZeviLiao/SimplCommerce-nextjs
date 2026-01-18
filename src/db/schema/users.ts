@@ -1,26 +1,16 @@
 import { relations } from "drizzle-orm";
-import {
-	boolean,
-	integer,
-	pgEnum,
-	pgTable,
-	primaryKey,
-	text,
-	timestamp,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { boolean, pgEnum, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // Enums
 export const userRoleEnum = pgEnum("user_role", ["admin", "vendor", "customer"]);
 
-// Auth.js required tables
-export const users = pgTable("users", {
-	id: uuid("id").defaultRandom().primaryKey(),
-	name: text("name"),
+// Better Auth required tables
+export const user = pgTable("user", {
+	id: text("id").primaryKey(),
+	name: text("name").notNull(),
 	email: text("email").unique().notNull(),
-	emailVerified: timestamp("email_verified", { mode: "date" }),
+	emailVerified: boolean("email_verified").notNull().default(false),
 	image: text("image"),
-	password: text("password"),
 	role: userRoleEnum("role").default("customer").notNull(),
 	phone: text("phone"),
 	culture: text("culture").default("en-US"),
@@ -32,43 +22,45 @@ export const users = pgTable("users", {
 	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
-export const accounts = pgTable(
-	"accounts",
-	{
-		userId: uuid("user_id")
-			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
-		type: text("type").notNull(),
-		provider: text("provider").notNull(),
-		providerAccountId: text("provider_account_id").notNull(),
-		refresh_token: text("refresh_token"),
-		access_token: text("access_token"),
-		expires_at: integer("expires_at"),
-		token_type: text("token_type"),
-		scope: text("scope"),
-		id_token: text("id_token"),
-		session_state: text("session_state"),
-	},
-	(account) => [primaryKey({ columns: [account.provider, account.providerAccountId] })],
-);
-
-export const sessions = pgTable("sessions", {
-	sessionToken: text("session_token").primaryKey(),
-	userId: uuid("user_id")
+export const session = pgTable("session", {
+	id: text("id").primaryKey(),
+	userId: text("user_id")
 		.notNull()
-		.references(() => users.id, { onDelete: "cascade" }),
-	expires: timestamp("expires", { mode: "date" }).notNull(),
+		.references(() => user.id, { onDelete: "cascade" }),
+	token: text("token").unique().notNull(),
+	expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+	ipAddress: text("ip_address"),
+	userAgent: text("user_agent"),
+	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
-export const verificationTokens = pgTable(
-	"verification_tokens",
-	{
-		identifier: text("identifier").notNull(),
-		token: text("token").notNull(),
-		expires: timestamp("expires", { mode: "date" }).notNull(),
-	},
-	(vt) => [primaryKey({ columns: [vt.identifier, vt.token] })],
-);
+export const account = pgTable("account", {
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	accountId: text("account_id").notNull(),
+	providerId: text("provider_id").notNull(),
+	accessToken: text("access_token"),
+	refreshToken: text("refresh_token"),
+	accessTokenExpiresAt: timestamp("access_token_expires_at", { mode: "date" }),
+	refreshTokenExpiresAt: timestamp("refresh_token_expires_at", { mode: "date" }),
+	scope: text("scope"),
+	idToken: text("id_token"),
+	password: text("password"),
+	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const verification = pgTable("verification", {
+	id: text("id").primaryKey(),
+	identifier: text("identifier").notNull(),
+	value: text("value").notNull(),
+	expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
 
 // Vendors
 export const vendors = pgTable("vendors", {
@@ -98,9 +90,9 @@ export const customerGroupUsers = pgTable(
 		customerGroupId: uuid("customer_group_id")
 			.notNull()
 			.references(() => customerGroups.id, { onDelete: "cascade" }),
-		userId: uuid("user_id")
+		userId: text("user_id")
 			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
+			.references(() => user.id, { onDelete: "cascade" }),
 	},
 	(t) => [primaryKey({ columns: [t.customerGroupId, t.userId] })],
 );
@@ -155,9 +147,9 @@ export const addresses = pgTable("addresses", {
 export const userAddresses = pgTable(
 	"user_addresses",
 	{
-		userId: uuid("user_id")
+		userId: text("user_id")
 			.notNull()
-			.references(() => users.id, { onDelete: "cascade" }),
+			.references(() => user.id, { onDelete: "cascade" }),
 		addressId: uuid("address_id")
 			.notNull()
 			.references(() => addresses.id, { onDelete: "cascade" }),
@@ -168,33 +160,33 @@ export const userAddresses = pgTable(
 );
 
 // Relations
-export const usersRelations = relations(users, ({ one, many }) => ({
+export const userRelations = relations(user, ({ one, many }) => ({
 	vendor: one(vendors, {
-		fields: [users.vendorId],
+		fields: [user.vendorId],
 		references: [vendors.id],
 	}),
-	accounts: many(accounts),
-	sessions: many(sessions),
+	accounts: many(account),
+	sessions: many(session),
 	userAddresses: many(userAddresses),
 	customerGroupUsers: many(customerGroupUsers),
 }));
 
-export const accountsRelations = relations(accounts, ({ one }) => ({
-	user: one(users, {
-		fields: [accounts.userId],
-		references: [users.id],
+export const accountRelations = relations(account, ({ one }) => ({
+	user: one(user, {
+		fields: [account.userId],
+		references: [user.id],
 	}),
 }));
 
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-	user: one(users, {
-		fields: [sessions.userId],
-		references: [users.id],
+export const sessionRelations = relations(session, ({ one }) => ({
+	user: one(user, {
+		fields: [session.userId],
+		references: [user.id],
 	}),
 }));
 
 export const vendorsRelations = relations(vendors, ({ many }) => ({
-	users: many(users),
+	users: many(user),
 }));
 
 export const customerGroupsRelations = relations(customerGroups, ({ many }) => ({
@@ -206,9 +198,9 @@ export const customerGroupUsersRelations = relations(customerGroupUsers, ({ one 
 		fields: [customerGroupUsers.customerGroupId],
 		references: [customerGroups.id],
 	}),
-	user: one(users, {
+	user: one(user, {
 		fields: [customerGroupUsers.userId],
-		references: [users.id],
+		references: [user.id],
 	}),
 }));
 
@@ -251,9 +243,9 @@ export const addressesRelations = relations(addresses, ({ one, many }) => ({
 }));
 
 export const userAddressesRelations = relations(userAddresses, ({ one }) => ({
-	user: one(users, {
+	user: one(user, {
 		fields: [userAddresses.userId],
-		references: [users.id],
+		references: [user.id],
 	}),
 	address: one(addresses, {
 		fields: [userAddresses.addressId],

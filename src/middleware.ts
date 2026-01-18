@@ -1,38 +1,46 @@
-import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
+import { type AuthSession, auth } from "@/lib/auth";
 
-export default auth((req) => {
-	const { nextUrl } = req;
-	const isLoggedIn = !!req.auth;
+export async function middleware(request: NextRequest) {
+	const { nextUrl } = request;
 
 	const isAdminRoute = nextUrl.pathname.startsWith("/admin");
 	const isAuthRoute =
 		nextUrl.pathname.startsWith("/login") || nextUrl.pathname.startsWith("/register");
-	const isApiRoute = nextUrl.pathname.startsWith("/api");
+	const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
 
-	// Allow API routes
-	if (isApiRoute) {
-		return;
+	// Allow API auth routes
+	if (isApiAuthRoute) {
+		return NextResponse.next();
 	}
+
+	// Get session
+	const session = (await auth.api.getSession({
+		headers: await headers(),
+	})) as AuthSession | null;
+
+	const isLoggedIn = !!session;
 
 	// Redirect to home if logged in and trying to access auth routes
 	if (isAuthRoute && isLoggedIn) {
-		return Response.redirect(new URL("/", nextUrl));
+		return NextResponse.redirect(new URL("/", nextUrl));
 	}
 
 	// Protect admin routes
 	if (isAdminRoute) {
 		if (!isLoggedIn) {
-			return Response.redirect(new URL("/login", nextUrl));
+			return NextResponse.redirect(new URL("/login", nextUrl));
 		}
 
-		const userRole = req.auth?.user?.role;
+		const userRole = session.user.role;
 		if (userRole !== "admin" && userRole !== "vendor") {
-			return Response.redirect(new URL("/", nextUrl));
+			return NextResponse.redirect(new URL("/", nextUrl));
 		}
 	}
 
-	return;
-});
+	return NextResponse.next();
+}
 
 export const config = {
 	matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)"],

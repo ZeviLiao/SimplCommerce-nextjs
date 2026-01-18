@@ -1,9 +1,10 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { auth } from "@/lib/auth";
+import { type AuthSession, auth } from "@/lib/auth";
 
 export default async function AccountPage() {
-	const session = await auth();
+	const session = (await auth.api.getSession({ headers: await headers() })) as AuthSession | null;
 
 	if (!session?.user) {
 		return null;

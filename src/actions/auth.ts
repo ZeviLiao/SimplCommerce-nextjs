@@ -1,11 +1,10 @@
 "use server";
 
-import { compare, hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { AuthError } from "next-auth";
+import { headers } from "next/headers";
 import { db } from "@/db";
-import { users } from "@/db/schema";
-import { auth, signIn, signOut } from "@/lib/auth";
+import { user } from "@/db/schema";
+import { auth } from "@/lib/auth";
 
 export async function registerUser(formData: FormData) {
 	const name = formData.get("name") as string;
@@ -22,30 +21,22 @@ export async function registerUser(formData: FormData) {
 
 	try {
 		// Check if user already exists
-		const existingUser = await db.query.users.findFirst({
-			where: eq(users.email, email.toLowerCase()),
+		const existingUser = await db.query.user.findFirst({
+			where: eq(user.email, email.toLowerCase()),
 		});
 
 		if (existingUser) {
 			return { error: "User with this email already exists" };
 		}
 
-		// Hash password
-		const hashedPassword = await hash(password, 10);
-
-		// Create user
-		await db.insert(users).values({
-			name,
-			email: email.toLowerCase(),
-			password: hashedPassword,
-			role: "customer",
-		});
-
-		// Auto sign in after registration
-		await signIn("credentials", {
-			email: email.toLowerCase(),
-			password,
-			redirect: false,
+		// Register user with Better Auth
+		await auth.api.signUpEmail({
+			body: {
+				email: email.toLowerCase(),
+				password,
+				name,
+			},
+			headers: await headers(),
 		});
 
 		return { success: true };
@@ -64,62 +55,44 @@ export async function loginUser(formData: FormData) {
 	}
 
 	try {
-		await signIn("credentials", {
-			email: email.toLowerCase(),
-			password,
-			redirect: false,
+		await auth.api.signInEmail({
+			body: {
+				email: email.toLowerCase(),
+				password,
+			},
+			headers: await headers(),
 		});
 
 		return { success: true };
 	} catch (error) {
-		if (error instanceof AuthError) {
-			switch (error.type) {
-				case "CredentialsSignin":
-					return { error: "Invalid email or password" };
-				default:
-					return { error: "Something went wrong" };
-			}
-		}
-		throw error;
+		console.error("Login error:", error);
+		return { error: "Invalid email or password" };
 	}
 }
 
 export async function logoutUser() {
-	await signOut({ redirect: false });
+	await auth.api.signOut({
+		headers: await headers(),
+	});
 }
 
-export async function changePassword(oldPassword: string, newPassword: string) {
+export async function changePassword(currentPassword: string, newPassword: string) {
 	try {
-		const session = await auth();
-
-		if (!session?.user?.email) {
-			return { success: false, error: "Not authenticated" };
-		}
-
-		// Get user from database
-		const user = await db.query.users.findFirst({
-			where: eq(users.email, session.user.email),
+		await auth.api.changePassword({
+			body: {
+				newPassword,
+				currentPassword,
+				revokeOtherSessions: false,
+			},
+			headers: await headers(),
 		});
-
-		if (!user || !user.password) {
-			return { success: false, error: "User not found or no password set" };
-		}
-
-		// Verify old password
-		const isValid = await compare(oldPassword, user.password);
-		if (!isValid) {
-			return { success: false, error: "Current password is incorrect" };
-		}
-
-		// Hash new password
-		const hashedPassword = await hash(newPassword, 10);
-
-		// Update password
-		await db.update(users).set({ password: hashedPassword }).where(eq(users.id, user.id));
 
 		return { success: true };
 	} catch (error) {
 		console.error("Change password error:", error);
-		return { success: false, error: "Failed to change password" };
+		return {
+			success: false,
+			error: "Failed to change password. Please check your current password.",
+		};
 	}
 }

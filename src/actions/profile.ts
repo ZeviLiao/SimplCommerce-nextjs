@@ -1,14 +1,14 @@
 "use server";
 
-import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { user as userTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 export async function updateProfile(formData: FormData) {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: await headers() });
 
 	if (!session?.user?.id) {
 		return { error: "Unauthorized" };
@@ -23,13 +23,13 @@ export async function updateProfile(formData: FormData) {
 
 	try {
 		await db
-			.update(users)
+			.update(userTable)
 			.set({
 				name,
 				phone: phone || null,
 				updatedAt: new Date(),
 			})
-			.where(eq(users.id, session.user.id));
+			.where(eq(userTable.id, session.user.id));
 
 		revalidatePath("/account");
 		revalidatePath("/account/profile");
@@ -42,7 +42,7 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function changePassword(formData: FormData) {
-	const session = await auth();
+	const session = await auth.api.getSession({ headers: await headers() });
 
 	if (!session?.user?.id) {
 		return { error: "Unauthorized" };
@@ -65,34 +65,20 @@ export async function changePassword(formData: FormData) {
 	}
 
 	try {
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, session.user.id),
+		await auth.api.changePassword({
+			body: {
+				newPassword,
+				currentPassword,
+				revokeOtherSessions: false,
+			},
+			headers: await headers(),
 		});
-
-		if (!user || !user.password) {
-			return { error: "User not found" };
-		}
-
-		const bcrypt = await import("bcryptjs");
-		const isValid = await bcrypt.compare(currentPassword, user.password);
-
-		if (!isValid) {
-			return { error: "Current password is incorrect" };
-		}
-
-		const hashedPassword = await hash(newPassword, 10);
-
-		await db
-			.update(users)
-			.set({
-				password: hashedPassword,
-				updatedAt: new Date(),
-			})
-			.where(eq(users.id, session.user.id));
 
 		return { success: true };
 	} catch (error) {
 		console.error("Change password error:", error);
-		return { error: "Failed to change password" };
+		return {
+			error: "Failed to change password. Please check your current password.",
+		};
 	}
 }

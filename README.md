@@ -6,7 +6,7 @@ A modern e-commerce platform built with Next.js 16, inspired by [SimplCommerce](
 
 - **Admin Portal**: Product/category/brand management, order processing
 - **Storefront**: Product catalog, shopping cart, checkout, wishlist
-- **Authentication**: NextAuth.js with credentials provider
+- **Authentication**: Better Auth with credentials & OAuth providers
 - **Responsive UI**: Tailwind CSS 4 with shadcn/ui components
 
 ## Tech Stack
@@ -17,7 +17,7 @@ A modern e-commerce platform built with Next.js 16, inspired by [SimplCommerce](
 | Language | TypeScript, React 19 |
 | Database | PostgreSQL + Drizzle ORM |
 | Styling | Tailwind CSS 4, Radix UI |
-| Auth | NextAuth.js v5 |
+| Auth | Better Auth v1.4+ |
 | State | Zustand (client), React Context |
 | Validation | Zod |
 | Dev Tools | Biome, Turbopack |
@@ -84,7 +84,9 @@ Edit `.env.local` and set required variables:
 
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/simplcommerce
-AUTH_SECRET=your-secret-here    # Generate: openssl rand -base64 32
+BETTER_AUTH_SECRET=your-secret-here    # Generate: openssl rand -base64 32
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ### 4. Initialize Database
