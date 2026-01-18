@@ -13,31 +13,24 @@ This project is inspired by [SimplCommerce](https://github.com/simplcommerce/Sim
 | State | Zustand |
 | DevTools | Biome, Turbopack, Husky |
 
-## Project Structure
+## Architecture
 
-```
-src/
-├── actions/           # Server actions
-│   ├── admin/        # Admin operations
-│   ├── auth.ts       # Authentication
-│   ├── checkout.ts   # Checkout flow
-│   └── wishlist.ts   # Wishlist operations
-├── app/              # Next.js app router
-│   ├── (admin)/      # Admin dashboard routes
-│   ├── (storefront)/ # Customer-facing routes
-│   └── api/          # API routes
-├── components/       # React components
-│   ├── admin/        # Admin components
-│   ├── products/     # Product listing/filters
-│   ├── checkout/     # Checkout flow
-│   └── ui/           # shadcn/ui components
-├── db/               # Database
-│   ├── schema/       # Drizzle schema definitions
-│   └── migrations/   # Database migrations
-├── lib/              # Utilities
-│   └── validators/   # Zod schemas
-└── stores/           # Zustand stores
-```
+**Feature-based structure** organized by domain modules:
+
+| Module | Routes | Components | Server Actions |
+|--------|--------|-----------|----------------|
+| **Catalog** | `/products`, `/categories`, `/brands` | Product listing, filters, detail | Product queries |
+| **Admin** | `/admin/products`, `/admin/categories` | Product/category forms, tables | CRUD operations |
+| **Auth** | `/login`, `/register`, `/account` | Login/register forms, profile | Authentication, session |
+| **Cart** | `/cart` | Cart items, quantity controls | Add/remove items |
+| **Checkout** | `/checkout` | Address, shipping, payment, review | Order creation |
+| **Wishlist** | `/account/wishlist` | Wishlist items grid | Add/remove wishlist |
+
+**Shared infrastructure:**
+- **Database**: Drizzle ORM schemas + PostgreSQL
+- **UI Components**: shadcn/ui + Tailwind CSS
+- **State**: Zustand for client state (cart)
+- **Validation**: Zod schemas for forms
 
 ## Getting Started
 
