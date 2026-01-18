@@ -35,34 +35,89 @@ This project is inspired by [SimplCommerce](https://github.com/simplcommerce/Sim
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20+
-- pnpm
-- PostgreSQL database
+- **Node.js 20+** - [Download](https://nodejs.org/)
+- **pnpm** - [Install](https://pnpm.io/installation): `npm install -g pnpm`
+- **PostgreSQL 14+** - [Download](https://www.postgresql.org/download/) or use Docker
 
-### Installation
+### Quick Start with Docker (Recommended)
+
+If you don't have PostgreSQL installed, use Docker:
 
 ```bash
+# Start PostgreSQL container
+docker run --name simplcommerce-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=simplcommerce \
+  -p 5432:5432 \
+  -d postgres:16
+```
+
+### Installation Steps
+
+#### 1. Clone and Install Dependencies
+
+```bash
+# Clone the repository
+git clone https://github.com/ZeviLiao/SimplCommerce-nextjs.git
+cd SimplCommerce-nextjs
+
 # Install dependencies
 pnpm install
+```
 
-# Set up environment variables
+#### 2. Set Up Environment Variables
+
+```bash
+# Copy the example environment file
 cp .env.example .env.local
-# Edit .env.local to configure DATABASE_URL
+```
 
-# Push schema to database
+Edit `.env.local` and configure the required variables:
+
+```env
+# Database connection (required)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/simplcommerce
+
+# Auth secret (required) - generate with: openssl rand -base64 32
+AUTH_SECRET=your-generated-secret-key-here
+
+# Auth URL (required)
+AUTH_URL=http://localhost:3000
+```
+
+To generate a secure `AUTH_SECRET`:
+```bash
+openssl rand -base64 32
+```
+
+#### 3. Initialize Database
+
+```bash
+# Push database schema to PostgreSQL
 pnpm db:push
 
-# Start development server
+# Seed the database with sample data (products, categories, test users)
+pnpm db:seed
+```
+
+#### 4. Start Development Server
+
+```bash
+# Start the Next.js development server with Turbopack
 pnpm dev
 ```
 
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
 ### Test Accounts
 
-For development and testing, the following accounts are available:
+After running `pnpm db:seed`, the following test accounts are available:
 
 **Admin Account:**
 - Email: `admin@example.com`
 - Password: `admin123`
+- Access: [http://localhost:3000/admin](http://localhost:3000/admin)
 
 **Customer Account:**
 - Email: `customer@example.com`
@@ -70,19 +125,66 @@ For development and testing, the following accounts are available:
 
 See [TEST_ACCOUNTS.md](./TEST_ACCOUNTS.md) for more details.
 
+### Verify Installation
+
+After starting the dev server, you should be able to:
+1. ✅ View the homepage at [http://localhost:3000](http://localhost:3000)
+2. ✅ Browse products at [http://localhost:3000/products](http://localhost:3000/products)
+3. ✅ Login at [http://localhost:3000/login](http://localhost:3000/login)
+4. ✅ Access admin panel at [http://localhost:3000/admin](http://localhost:3000/admin) (using admin account)
+
 ### Available Scripts
 
 ```bash
+# Development
 pnpm dev          # Start dev server (with Turbopack)
 pnpm build        # Build for production
 pnpm start        # Start production server
-pnpm lint         # Run linter
+
+# Code Quality
+pnpm lint         # Run Biome linter
 pnpm lint:fix     # Auto-fix lint issues
-pnpm format       # Format code
+pnpm format       # Format code with Biome
+pnpm check        # Run Biome check and auto-fix
+
+# Database
 pnpm db:generate  # Generate database migrations
 pnpm db:migrate   # Run database migrations
-pnpm db:push      # Push schema to database
-pnpm db:studio    # Open Drizzle Studio
+pnpm db:push      # Push schema to database (for development)
+pnpm db:seed      # Seed database with sample data
+pnpm db:studio    # Open Drizzle Studio (database GUI)
+```
+
+### Troubleshooting
+
+#### Database Connection Issues
+
+If you get "connection refused" errors:
+
+```bash
+# Check if PostgreSQL is running
+docker ps  # If using Docker
+
+# Check connection manually
+psql postgresql://postgres:postgres@localhost:5432/simplcommerce
+```
+
+#### Port 3000 Already in Use
+
+```bash
+# Kill the process using port 3000
+lsof -ti:3000 | xargs kill -9
+
+# Or use a different port
+PORT=3001 pnpm dev
+```
+
+#### Module Not Found Errors
+
+```bash
+# Clear cache and reinstall
+rm -rf node_modules .next
+pnpm install
 ```
 
 ## License
