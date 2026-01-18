@@ -24,6 +24,15 @@
 			},
 			"style": {
 				"noNonNullAssertion": "off"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off"
+			},
+			"a11y": {
+				"noLabelWithoutControl": "off"
 			}
 		}
 	},

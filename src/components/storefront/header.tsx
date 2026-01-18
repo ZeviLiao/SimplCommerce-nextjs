@@ -1,49 +1,34 @@
+import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { UserMenu } from "./user-menu";
+import { Button } from "@/components/ui/button";
+import { getHomepageCategories } from "@/lib/data/catalog";
 
 export async function Header() {
-	const session = await auth();
+	const categories = await getHomepageCategories();
 
 	return (
-		<header className="sticky top-0 z-50 w-full border-b bg-white dark:bg-gray-950">
-			<div className="container mx-auto flex h-16 items-center justify-between px-4">
-				<div className="flex items-center gap-6">
-					<Link href="/" className="text-xl font-bold">
-						SimplCommerce
-					</Link>
-
-					<nav className="hidden md:flex items-center gap-4">
-						<Link href="/products" className="text-sm font-medium hover:underline">
-							Products
+		<header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+			<div className="container flex h-16 items-center justify-between">
+				<Link href="/" className="flex items-center gap-2 font-bold text-xl">
+					<ShoppingBag className="h-6 w-6" />
+					<span>SimplCommerce</span>
+				</Link>
+				<nav className="hidden md:flex gap-6 text-sm font-medium">
+					{categories.map((category) => (
+						<Link
+							key={category.id}
+							href={`/category/${category.slug}`}
+							className="transition-colors hover:text-primary"
+						>
+							{category.name}
 						</Link>
-						<Link href="/categories" className="text-sm font-medium hover:underline">
-							Categories
-						</Link>
-					</nav>
-				</div>
-
+					))}
+				</nav>
 				<div className="flex items-center gap-4">
-					{session?.user ? (
-						<>
-							<Link href="/cart" className="text-sm font-medium hover:underline">
-								Cart
-							</Link>
-							<UserMenu user={session.user} />
-						</>
-					) : (
-						<>
-							<Link href="/login" className="text-sm font-medium hover:underline">
-								Sign in
-							</Link>
-							<Link
-								href="/register"
-								className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
-							>
-								Sign up
-							</Link>
-						</>
-					)}
+					<Button variant="ghost" asChild>
+						<Link href="/admin/products">Admin</Link>
+					</Button>
+					<Button>Cart (0)</Button>
 				</div>
 			</div>
 		</header>
