@@ -110,6 +110,45 @@ export async function getCategories() {
 	return categories.filter((cat) => !cat.parentId);
 }
 
+export async function getCategoriesWithCount() {
+	// Get all categories with product counts
+	const categoryCounts = await db
+		.select({
+			categoryId: schema.productCategories.categoryId,
+			count: sql<number>`COUNT(DISTINCT ${schema.productCategories.productId})`,
+		})
+		.from(schema.productCategories)
+		.innerJoin(schema.products, eq(schema.productCategories.productId, schema.products.id))
+		.where(
+			and(eq(schema.products.isPublished, true), eq(schema.products.isVisibleIndividually, true)),
+		)
+		.groupBy(schema.productCategories.categoryId);
+
+	const countMap = new Map(categoryCounts.map((c) => [c.categoryId, c.count]));
+
+	// Get all published categories
+	const allCategories = await db.query.categories.findMany({
+		where: eq(schema.categories.isPublished, true),
+		orderBy: (categories, { asc }) => [asc(categories.displayOrder), asc(categories.name)],
+	});
+
+	// Build parent categories with children
+	const parentCategories = allCategories
+		.filter((cat) => !cat.parentId)
+		.map((parent) => ({
+			...parent,
+			count: countMap.get(parent.id) || 0,
+			children: allCategories
+				.filter((cat) => cat.parentId === parent.id)
+				.map((child) => ({
+					...child,
+					count: countMap.get(child.id) || 0,
+				})),
+		}));
+
+	return parentCategories;
+}
+
 export async function getBrands() {
 	const brands = await db.query.brands.findMany({
 		where: eq(schema.brands.isPublished, true),
