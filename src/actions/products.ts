@@ -73,9 +73,9 @@ export async function getProductBySlug(slug: string) {
 					category: true,
 				},
 			},
-			media: {
-				orderBy: (media, { asc }) => [asc(media.displayOrder)],
-			},
+			// media: {
+			// 	orderBy: (media, { asc }) => [asc(media.displayOrder)],
+			// },
 		},
 	});
 
@@ -212,8 +212,15 @@ export async function getProductsByBrand(params: {
 			thumbnailImageUrl: schema.products.thumbnailImageUrl,
 			reviewsCount: schema.products.reviewsCount,
 			ratingAverage: schema.products.ratingAverage,
+			isFeatured: schema.products.isFeatured,
+			brand: {
+				id: schema.brands.id,
+				name: schema.brands.name,
+				slug: schema.brands.slug,
+			},
 		})
 		.from(schema.products)
+		.leftJoin(schema.brands, eq(schema.products.brandId, schema.brands.id))
 		.where(
 			and(
 				eq(schema.products.brandId, brandId),
@@ -352,8 +359,15 @@ export async function getProductsByCategory(params: {
 			thumbnailImageUrl: schema.products.thumbnailImageUrl,
 			reviewsCount: schema.products.reviewsCount,
 			ratingAverage: schema.products.ratingAverage,
+			isFeatured: schema.products.isFeatured,
+			brand: {
+				id: schema.brands.id,
+				name: schema.brands.name,
+				slug: schema.brands.slug,
+			},
 		})
 		.from(schema.products)
+		.leftJoin(schema.brands, eq(schema.products.brandId, schema.brands.id))
 		.where(
 			and(
 				inArray(schema.products.id, productIdsInCategories),

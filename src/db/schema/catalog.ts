@@ -133,17 +133,17 @@ export const productCategories = pgTable(
 	(t) => [primaryKey({ columns: [t.productId, t.categoryId] })],
 );
 
-// Product Media
-export const productMedia = pgTable("product_media", {
-	id: uuid("id").defaultRandom().primaryKey(),
-	productId: uuid("product_id")
-		.notNull()
-		.references(() => products.id, { onDelete: "cascade" }),
-	mediaUrl: text("media_url").notNull(),
-	mediaType: text("media_type").default("image").notNull(), // 'image' | 'video'
-	displayOrder: integer("display_order").default(0).notNull(),
-	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-});
+// Product Media - Commenting out as it's defined in media.ts
+// export const productMedia = pgTable("product_media", {
+// 	id: uuid("id").defaultRandom().primaryKey(),
+// 	productId: uuid("product_id")
+// 		.notNull()
+// 		.references(() => products.id, { onDelete: "cascade" }),
+// 	mediaUrl: text("media_url").notNull(),
+// 	mediaType: text("media_type").default("image").notNull(), // 'image' | 'video'
+// 	displayOrder: integer("display_order").default(0).notNull(),
+// 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+// });
 
 // Product Attribute Values
 export const productAttributeValues = pgTable(
@@ -309,7 +309,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
 		relationName: "productUpdatedBy",
 	}),
 	productCategories: many(productCategories),
-	media: many(productMedia),
+	// media: many(productMedia), // Commented out - productMedia defined in media.ts
 	attributeValues: many(productAttributeValues),
 	optionValues: many(productOptionValues),
 	optionCombinations: many(productOptionCombinations),
@@ -330,12 +330,13 @@ export const productCategoriesRelations = relations(productCategories, ({ one })
 	}),
 }));
 
-export const productMediaRelations = relations(productMedia, ({ one }) => ({
-	product: one(products, {
-		fields: [productMedia.productId],
-		references: [products.id],
-	}),
-}));
+// Commenting out as productMedia is defined in media.ts
+// export const productMediaRelations = relations(productMedia, ({ one }) => ({
+// 	product: one(products, {
+// 		fields: [productMedia.productId],
+// 		references: [products.id],
+// 	}),
+// }));
 
 export const productAttributeValuesRelations = relations(productAttributeValues, ({ one }) => ({
 	product: one(products, {

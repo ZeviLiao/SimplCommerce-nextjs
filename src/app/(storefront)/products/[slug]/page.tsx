@@ -29,10 +29,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
 				<div>
 					<ProductImageGallery
 						images={
-							product.media?.map((m) => ({
-								url: m.mediaUrl,
-								alt: product.name,
-							})) || []
+							// product.media?.map((m) => ({
+							// 	url: m.mediaUrl,
+							// 	alt: product.name,
+							// })) || []
+							[]
 						}
 						fallbackImage={product.thumbnailImageUrl || ""}
 						productName={product.name}
