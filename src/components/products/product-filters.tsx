@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -23,16 +24,16 @@ interface Brand {
 interface ProductFiltersProps {
 	categories: Category[];
 	brands: Brand[];
-	selectedCategoryId?: string;
-	selectedBrandId?: string;
+	selectedCategoryIds?: string[];
+	selectedBrandIds?: string[];
 	searchQuery?: string;
 }
 
 export function ProductFilters({
 	categories,
 	brands,
-	selectedCategoryId,
-	selectedBrandId,
+	selectedCategoryIds = [],
+	selectedBrandIds = [],
 	searchQuery,
 }: ProductFiltersProps) {
 	const router = useRouter();
@@ -53,23 +54,39 @@ export function ProductFilters({
 		router.push(`/products?${params.toString()}`);
 	};
 
-	const handleCategoryChange = (categoryId: string) => {
+	const handleCategoryChange = (categoryId: string, checked: boolean) => {
 		const params = new URLSearchParams(searchParams);
-		if (categoryId === selectedCategoryId) {
-			params.delete("categoryId");
+		let categories = selectedCategoryIds;
+
+		if (checked) {
+			categories = [...categories, categoryId];
 		} else {
-			params.set("categoryId", categoryId);
+			categories = categories.filter((id) => id !== categoryId);
+		}
+
+		if (categories.length > 0) {
+			params.set("category", categories.join(","));
+		} else {
+			params.delete("category");
 		}
 		params.delete("page");
 		router.push(`/products?${params.toString()}`);
 	};
 
-	const handleBrandChange = (brandId: string) => {
+	const handleBrandChange = (brandId: string, checked: boolean) => {
 		const params = new URLSearchParams(searchParams);
-		if (brandId === selectedBrandId) {
-			params.delete("brandId");
+		let brands = selectedBrandIds;
+
+		if (checked) {
+			brands = [...brands, brandId];
 		} else {
-			params.set("brandId", brandId);
+			brands = brands.filter((id) => id !== brandId);
+		}
+
+		if (brands.length > 0) {
+			params.set("brand", brands.join(","));
+		} else {
+			params.delete("brand");
 		}
 		params.delete("page");
 		router.push(`/products?${params.toString()}`);
@@ -79,7 +96,7 @@ export function ProductFilters({
 		router.push("/products");
 	};
 
-	const hasFilters = selectedCategoryId || selectedBrandId || searchQuery;
+	const hasFilters = selectedCategoryIds.length > 0 || selectedBrandIds.length > 0 || searchQuery;
 
 	return (
 		<div className="space-y-6">
@@ -116,32 +133,34 @@ export function ProductFilters({
 				<div className="space-y-2">
 					{categories.map((category) => (
 						<div key={category.id}>
-							<button
-								type="button"
-								onClick={() => handleCategoryChange(category.id)}
-								className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors ${
-									selectedCategoryId === category.id
-										? "bg-primary text-primary-foreground hover:bg-primary/90"
-										: ""
-								}`}
-							>
-								{category.name} {category.count > 0 && `(${category.count})`}
-							</button>
+							<label className="flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-md hover:bg-muted transition-colors">
+								<Checkbox
+									checked={selectedCategoryIds.includes(category.id)}
+									onCheckedChange={(checked) =>
+										handleCategoryChange(category.id, checked as boolean)
+									}
+								/>
+								<span className="text-sm flex-1">
+									{category.name} {category.count > 0 && `(${category.count})`}
+								</span>
+							</label>
 							{category.children && category.children.length > 0 && (
-								<div className="ml-4 mt-1 space-y-1">
+								<div className="ml-6 mt-1 space-y-1">
 									{category.children.map((child) => (
-										<button
+										<label
 											key={child.id}
-											type="button"
-											onClick={() => handleCategoryChange(child.id)}
-											className={`w-full text-left px-3 py-1.5 text-sm rounded-md hover:bg-muted transition-colors ${
-												selectedCategoryId === child.id
-													? "bg-primary text-primary-foreground hover:bg-primary/90"
-													: ""
-											}`}
+											className="flex items-center space-x-2 cursor-pointer px-3 py-1.5 rounded-md hover:bg-muted transition-colors"
 										>
-											{child.name} {child.count > 0 && `(${child.count})`}
-										</button>
+											<Checkbox
+												checked={selectedCategoryIds.includes(child.id)}
+												onCheckedChange={(checked) =>
+													handleCategoryChange(child.id, checked as boolean)
+												}
+											/>
+											<span className="text-sm flex-1">
+												{child.name} {child.count > 0 && `(${child.count})`}
+											</span>
+										</label>
 									))}
 								</div>
 							)}
@@ -155,18 +174,16 @@ export function ProductFilters({
 				<Label className="text-base font-semibold mb-3 block">Brands</Label>
 				<div className="space-y-2">
 					{brands.map((brand) => (
-						<button
+						<label
 							key={brand.id}
-							type="button"
-							onClick={() => handleBrandChange(brand.id)}
-							className={`w-full text-left px-3 py-2 rounded-md hover:bg-muted transition-colors ${
-								selectedBrandId === brand.id
-									? "bg-primary text-primary-foreground hover:bg-primary/90"
-									: ""
-							}`}
+							className="flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-md hover:bg-muted transition-colors"
 						>
-							{brand.name}
-						</button>
+							<Checkbox
+								checked={selectedBrandIds.includes(brand.id)}
+								onCheckedChange={(checked) => handleBrandChange(brand.id, checked as boolean)}
+							/>
+							<span className="text-sm flex-1">{brand.name}</span>
+						</label>
 					))}
 				</div>
 			</div>

@@ -6,14 +6,35 @@ import * as schema from "@/db/schema";
 
 export async function getProducts(params?: {
 	search?: string;
-	categoryId?: string;
-	brandId?: string;
+	categoryIds?: string[];
+	brandIds?: string[];
 	limit?: number;
 	offset?: number;
 }) {
-	const { search, categoryId, brandId, limit = 12, offset = 0 } = params || {};
+	const { search, categoryIds, brandIds, limit = 12, offset = 0 } = params || {};
 
-	let query = db
+	// Build conditions array
+	const conditions = [eq(schema.products.isPublished, true)];
+
+	if (search) {
+		conditions.push(ilike(schema.products.name, `%${search}%`));
+	}
+
+	if (brandIds && brandIds.length > 0) {
+		conditions.push(inArray(schema.products.brandId, brandIds));
+	}
+
+	// If category filter is applied, we need to join with productCategories
+	if (categoryIds && categoryIds.length > 0) {
+		const productIdsInCategories = db
+			.select({ productId: schema.productCategories.productId })
+			.from(schema.productCategories)
+			.where(inArray(schema.productCategories.categoryId, categoryIds));
+
+		conditions.push(inArray(schema.products.id, productIdsInCategories));
+	}
+
+	const products = await db
 		.select({
 			id: schema.products.id,
 			name: schema.products.name,
@@ -34,28 +55,7 @@ export async function getProducts(params?: {
 		})
 		.from(schema.products)
 		.leftJoin(schema.brands, eq(schema.products.brandId, schema.brands.id))
-		.where(eq(schema.products.isPublished, true))
-		.$dynamic();
-
-	// Apply filters
-	if (search) {
-		query = query.where(ilike(schema.products.name, `%${search}%`));
-	}
-
-	if (brandId) {
-		query = query.where(eq(schema.products.brandId, brandId));
-	}
-
-	if (categoryId) {
-		query = query
-			.leftJoin(
-				schema.productCategories,
-				eq(schema.products.id, schema.productCategories.productId),
-			)
-			.where(eq(schema.productCategories.categoryId, categoryId));
-	}
-
-	const products = await query
+		.where(and(...conditions))
 		.orderBy(desc(schema.products.isFeatured), desc(schema.products.createdAt))
 		.limit(limit)
 		.offset(offset);

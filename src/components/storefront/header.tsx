@@ -1,5 +1,6 @@
 import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import { CartButton } from "@/components/storefront/cart-button";
 import { Button } from "@/components/ui/button";
 import { getHomepageCategories } from "@/lib/data/catalog";
 
@@ -28,7 +29,7 @@ export async function Header() {
 					<Button variant="ghost" asChild>
 						<Link href="/admin/products">Admin</Link>
 					</Button>
-					<Button>Cart (0)</Button>
+					<CartButton />
 				</div>
 			</div>
 		</header>

@@ -6,8 +6,8 @@ import { ProductGrid } from "@/components/products/product-grid";
 interface PageProps {
 	searchParams: Promise<{
 		search?: string;
-		categoryId?: string;
-		brandId?: string;
+		category?: string;
+		brand?: string;
 		page?: string;
 	}>;
 }
@@ -18,11 +18,15 @@ export default async function ProductsPage({ searchParams }: PageProps) {
 	const limit = 12;
 	const offset = (page - 1) * limit;
 
+	// Parse multi-select filters
+	const categoryIds = params.category ? params.category.split(",") : undefined;
+	const brandIds = params.brand ? params.brand.split(",") : undefined;
+
 	const [products, categories, brands] = await Promise.all([
 		getProducts({
 			search: params.search,
-			categoryId: params.categoryId,
-			brandId: params.brandId,
+			categoryIds,
+			brandIds,
 			limit,
 			offset,
 		}),
@@ -42,8 +46,8 @@ export default async function ProductsPage({ searchParams }: PageProps) {
 					<ProductFilters
 						categories={categories}
 						brands={brands}
-						selectedCategoryId={params.categoryId}
-						selectedBrandId={params.brandId}
+						selectedCategoryIds={categoryIds}
+						selectedBrandIds={brandIds}
 						searchQuery={params.search}
 					/>
 				</aside>
