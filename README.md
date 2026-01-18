@@ -56,6 +56,20 @@ pnpm db:push
 pnpm dev
 ```
 
+### Test Accounts
+
+For development and testing, the following accounts are available:
+
+**Admin Account:**
+- Email: `admin@example.com`
+- Password: `admin123`
+
+**Customer Account:**
+- Email: `customer@example.com`
+- Password: `customer123`
+
+See [TEST_ACCOUNTS.md](./TEST_ACCOUNTS.md) for more details.
+
 ### Available Scripts
 
 ```bash

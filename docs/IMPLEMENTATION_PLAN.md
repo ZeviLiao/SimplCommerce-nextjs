@@ -2,528 +2,102 @@
 
 本文件為 SimplCommerce 電商系統的 Next.js 重構計畫。
 
+---
+
+## 目前進度
+
+### ✅ 已完成
+
+- [x] 專案初始化 (Next.js 16, TypeScript, Tailwind)
+- [x] 工具鏈設定 (Biome, Husky, lint-staged)
+- [x] 資料庫 Schema 定義 (Drizzle ORM)
+- [x] Auth.js (NextAuth v5) 設定
+- [x] 專案結構建立
+- [x] shadcn/ui 整合 (取代 MUI)
+- [x] 註冊頁面 `/register`
+- [x] 登入頁面 `/login`
+- [x] 登出功能 (Header with UserMenu)
+- [x] 測試帳號建立 (admin + customer)
+
+### 🔲 待實作
+
+- [ ] Phase 1.1-1.3 (會員中心、地址管理、後台用戶管理)
+- [ ] Phase 2-13 功能模組 (見下方清單)
+
+---
+
 ## 技術棧
 
-| 類別 | 技術 |
-|------|------|
-| Framework | Next.js 16 (App Router, Turbopack) |
-| Language | TypeScript |
-| UI | MUI (Material UI) + Tailwind CSS |
-| State | Zustand |
-| Database | PostgreSQL + Drizzle ORM |
-| API | Server Actions + Hono (API routes) |
-| Linting | Biome |
-| Git Hooks | Husky + lint-staged |
+| 類別 | 技術 | 備註 |
+|------|------|------|
+| Framework | Next.js 16 | App Router, Turbopack |
+| Language | TypeScript | |
+| UI | shadcn/ui + Tailwind CSS 4 | Radix UI + clsx, tailwind-merge, lucide-react |
+| State | Zustand 5 | |
+| Database | PostgreSQL + Drizzle ORM | |
+| Auth | Auth.js (NextAuth v5) | Credentials + Google + GitHub |
+| API | Server Actions + Hono | |
+| Linting | Biome | 只檢查 src/ |
+| Git Hooks | Husky + lint-staged | |
 
 ---
 
-## 功能模組清單
+## 已建立的檔案
 
-### Phase 1: 核心基礎 (Foundation)
-
-#### 1.1 用戶系統 (Core/Users)
-- [ ] 用戶註冊/登入/登出
-- [ ] JWT 認證 + Refresh Token
-- [ ] 角色管理 (Admin, Vendor, Customer)
-- [ ] 權限控制
-- [ ] 用戶個人資料
-- [ ] 地址簿管理 (預設帳單/配送地址)
-- [ ] 客戶群組 (CustomerGroup)
-
-#### 1.2 地理資訊
-- [ ] 國家管理
-- [ ] 省份/州管理
-- [ ] 區域管理
-
-#### 1.3 媒體管理
-- [ ] 圖片上傳
-- [ ] 媒體庫
-- [ ] Storage Provider (Local / S3 / Azure)
-
-#### 1.4 系統設定
-- [ ] AppSetting 設定管理
-- [ ] Widget 系統
-- [ ] Widget Zone
-
----
-
-### Phase 2: 商品目錄 (Catalog)
-
-#### 2.1 商品管理
-- [ ] 商品 CRUD
-- [ ] 商品圖片/媒體
-- [ ] 商品規格 (Specification)
-- [ ] 商品價格 (Price, OldPrice, SpecialPrice)
-- [ ] 價格歷史記錄
-- [ ] 商品選項 (Option) - 顏色、尺寸等
-- [ ] 商品屬性 (Attribute)
-- [ ] 商品選項組合 (OptionCombination)
-- [ ] SKU/GTIN 管理
-- [ ] 庫存追蹤
-- [ ] 精選商品 (Featured)
-- [ ] 電詢價格 (Call for Pricing)
-
-#### 2.2 分類管理
-- [ ] 分類 CRUD
-- [ ] 分類階層 (Parent/Child)
-- [ ] 分類圖片
-- [ ] 分類 SEO (Meta Title/Keywords/Description)
-
-#### 2.3 品牌管理
-- [ ] 品牌 CRUD
-
-#### 2.4 商品模板
-- [ ] 商品模板管理
-- [ ] 屬性群組
-
-#### 2.5 商品關聯
-- [ ] 相關商品
-- [ ] 交叉銷售 (Cross-sell)
-- [ ] 向上銷售 (Up-sell)
-
----
-
-### Phase 3: 購物車與結帳 (Shopping)
-
-#### 3.1 購物車
-- [ ] 加入購物車
-- [ ] 更新數量
-- [ ] 移除商品
-- [ ] 購物車摘要
-- [ ] 折價券套用
-
-#### 3.2 願望清單
-- [ ] 加入願望清單
-- [ ] 移除願望清單
-- [ ] 願望清單列表
-
-#### 3.3 結帳流程
-- [ ] 配送地址
-- [ ] 帳單地址
-- [ ] 配送方式選擇
-- [ ] 稅金計算
-- [ ] 付款方式選擇
-- [ ] 訂單確認
-
----
-
-### Phase 4: 訂單管理 (Orders)
-
-#### 4.1 訂單
-- [ ] 訂單建立
-- [ ] 訂單狀態 (New, Processing, Shipped, Completed, Cancelled)
-- [ ] 訂單歷史記錄
-- [ ] 訂單備註
-- [ ] 訂單取消
-- [ ] 多供應商訂單 (Master Order + Child Orders)
-
-#### 4.2 發貨管理
-- [ ] 建立發貨單
-- [ ] 追蹤號碼
-- [ ] 發貨狀態
-- [ ] 倉庫選擇
-
-#### 4.3 付款管理
-- [ ] 付款記錄
-- [ ] 付款狀態
-- [ ] 付款手續費
-
----
-
-### Phase 5: 定價與促銷 (Pricing)
-
-#### 5.1 購物車規則 (Cart Rules)
-- [ ] 折價券管理
-- [ ] 固定/百分比折扣
-- [ ] 最低/最高金額限制
-- [ ] 適用商品/分類/客戶群組
-- [ ] 有效期間
-- [ ] 使用次數追蹤
-
-#### 5.2 目錄規則 (Catalog Rules)
-- [ ] 自動折扣規則
-- [ ] 客戶群組折扣
-
----
-
-### Phase 6: 配送與稅金 (Shipping & Tax)
-
-#### 6.1 配送
-- [ ] 配送供應商管理
-- [ ] 免運費規則
-- [ ] 表格運費 (Table Rate)
-- [ ] 價格區間運費
-
-#### 6.2 稅金
-- [ ] 稅務類別
-- [ ] 稅率 (依國家/地區)
-
----
-
-### Phase 7: 庫存管理 (Inventory)
-
-- [ ] 倉庫管理
-- [ ] 庫存數量
-- [ ] 庫存歷史
-- [ ] 補貨通知訂閱
-
----
-
-### Phase 8: 付款整合 (Payments)
-
-- [ ] Stripe
-- [ ] PayPal Express
-- [ ] Cash on Delivery (CoD)
-- [ ] 其他 (Braintree, 綠界等)
-
----
-
-### Phase 9: 內容管理 (CMS)
-
-#### 9.1 頁面
-- [ ] 頁面 CRUD
-- [ ] SEO 設定
-- [ ] 發布控制
-
-#### 9.2 選單
-- [ ] 選單管理
-- [ ] 選單項目階層
-
-#### 9.3 新聞/部落格
-- [ ] 新聞項目
-- [ ] 新聞分類
-
----
-
-### Phase 10: 互動功能
-
-#### 10.1 評論系統
-- [ ] 商品評論
-- [ ] 評分 (1-5 星)
-- [ ] 評論回覆
-- [ ] 評論審核
-
-#### 10.2 留言系統
-- [ ] 實體留言
-- [ ] 留言審核
-
-#### 10.3 聯絡表單
-- [ ] 聯絡表單
-- [ ] 聯絡區域分類
-
----
-
-### Phase 11: 供應商系統 (Multi-Vendor)
-
-- [ ] 供應商管理
-- [ ] 供應商商品
-- [ ] 供應商訂單
-- [ ] 供應商發貨
-- [ ] 供應商儀表板
-
----
-
-### Phase 12: 進階功能
-
-#### 12.1 搜尋
-- [ ] 商品搜尋
-- [ ] 全文搜尋
-
-#### 12.2 商品比較
-- [ ] 加入比較
-- [ ] 屬性比較表
-
-#### 12.3 最近瀏覽
-- [ ] 瀏覽記錄
-- [ ] 最近瀏覽 Widget
-
-#### 12.4 通知系統
-- [ ] 通知設定
-- [ ] 即時通知 (WebSocket)
-
-#### 12.5 活動紀錄
-- [ ] 實體瀏覽統計
-- [ ] 熱門商品
-
----
-
-### Phase 13: 多語系
-
-- [ ] 商品翻譯
-- [ ] 分類翻譯
-- [ ] 語言切換
-
----
-
-## 資料庫 Schema 設計
-
-### 核心表格
+### 資料庫 Schema
 
 ```
-users
-├── id (uuid)
-├── email
-├── full_name
-├── phone
-├── password_hash
-├── refresh_token_hash
-├── vendor_id (fk)
-├── culture
-├── is_deleted
-├── created_at
-└── updated_at
-
-user_addresses
-├── id
-├── user_id (fk)
-├── address_id (fk)
-├── address_type (shipping/billing)
-└── is_default
-
-addresses
-├── id
-├── contact_name
-├── phone
-├── address_line_1
-├── address_line_2
-├── city
-├── zip_code
-├── district_id (fk)
-├── state_or_province_id (fk)
-└── country_id (fk)
-
-roles
-├── id
-├── name
-└── permissions (jsonb)
-
-user_roles
-├── user_id (fk)
-└── role_id (fk)
-
-customer_groups
-├── id
-├── name
-└── is_active
-
-customer_group_users
-├── customer_group_id (fk)
-└── user_id (fk)
+src/db/
+├── index.ts                    # DB 連線
+└── schema/
+    ├── index.ts                # 匯出所有 schema
+    ├── users.ts                # 用戶、Auth tables、供應商、客戶群組、地址
+    ├── catalog.ts              # 商品、分類、品牌、屬性、選項、評論
+    └── orders.ts               # 購物車、訂單、付款、庫存、發貨、折價券
 ```
 
-### 商品目錄表格
+### Auth.js
 
 ```
-products
-├── id
-├── name
-├── slug
-├── short_description
-├── description
-├── specification (jsonb)
-├── price
-├── old_price
-├── special_price
-├── special_price_start
-├── special_price_end
-├── is_published
-├── is_featured
-├── is_call_for_pricing
-├── is_allow_to_order
-├── stock_tracking_enabled
-├── stock_quantity
-├── sku
-├── gtin
-├── display_order
-├── brand_id (fk)
-├── tax_class_id (fk)
-├── vendor_id (fk)
-├── thumbnail_image_url
-├── reviews_count
-├── rating_average
-├── created_at
-└── updated_at
-
-categories
-├── id
-├── name
-├── slug
-├── description
-├── parent_id (fk, self)
-├── display_order
-├── is_published
-├── include_in_menu
-├── thumbnail_image_url
-├── meta_title
-├── meta_keywords
-└── meta_description
-
-product_categories
-├── product_id (fk)
-├── category_id (fk)
-└── is_featured
-
-brands
-├── id
-├── name
-├── slug
-├── description
-└── is_published
-
-product_media
-├── id
-├── product_id (fk)
-├── media_url
-├── media_type
-└── display_order
-
-product_options
-├── id
-├── product_id (fk)
-├── option_id (fk)
-└── values (jsonb)
-
-product_attributes
-├── id
-├── product_id (fk)
-├── attribute_id (fk)
-└── value
-
-product_links
-├── id
-├── product_id (fk)
-├── linked_product_id (fk)
-└── link_type (related/cross_sell/up_sell)
+src/
+├── lib/auth/index.ts           # NextAuth 設定
+├── middleware.ts               # 路由保護
+├── types/next-auth.d.ts        # TypeScript 型別擴展
+└── app/api/auth/[...nextauth]/route.ts  # Auth API
 ```
 
-### 訂單表格
+### 設定檔
 
 ```
-orders
-├── id
-├── customer_id (fk)
-├── vendor_id (fk)
-├── status (new/processing/shipped/completed/cancelled)
-├── coupon_code
-├── coupon_rule_name
-├── discount_amount
-├── subtotal
-├── subtotal_with_discount
-├── shipping_fee_amount
-├── shipping_method
-├── tax_amount
-├── order_total
-├── payment_method
-├── payment_fee_amount
-├── shipping_address (jsonb)
-├── billing_address (jsonb)
-├── order_note
-├── parent_id (fk, self)
-├── is_master_order
-├── created_at
-└── updated_at
-
-order_items
-├── id
-├── order_id (fk)
-├── product_id (fk)
-├── product_name
-├── product_sku
-├── product_price
-├── quantity
-├── discount_amount
-└── tax_amount
-
-order_history
-├── id
-├── order_id (fk)
-├── old_status
-├── new_status
-├── note
-├── created_by_id (fk)
-└── created_at
-
-shipments
-├── id
-├── order_id (fk)
-├── warehouse_id (fk)
-├── vendor_id (fk)
-├── tracking_number
-├── status
-├── created_by_id (fk)
-├── created_at
-└── updated_at
-
-shipment_items
-├── id
-├── shipment_id (fk)
-├── order_item_id (fk)
-└── quantity
-
-payments
-├── id
-├── order_id (fk)
-├── amount
-├── payment_fee
-├── payment_method
-├── gateway_transaction_id
-├── status
-├── failure_message
-├── created_at
-└── updated_at
+/
+├── biome.json                  # Biome 設定 (只檢查 src/)
+├── drizzle.config.ts           # Drizzle 設定
+├── .lintstagedrc.json          # lint-staged 設定
+├── .env.example                # 環境變數範本
+└── .husky/pre-commit           # Git hook
 ```
 
-### 購物車表格
+---
 
-```
-cart_items
-├── id
-├── user_id (fk)
-├── product_id (fk)
-├── quantity
-├── created_at
-└── updated_at
-```
+## 環境設定步驟
 
-### 定價表格
+```bash
+# 1. 複製環境變數
+cp .env.example .env
 
-```
-cart_rules
-├── id
-├── name
-├── coupon_code
-├── description
-├── is_active
-├── start_date
-├── end_date
-├── is_coupon_code_required
-├── discount_type (fixed/percentage)
-├── discount_amount
-├── min_order_amount
-├── max_order_amount
-├── max_usage_per_coupon
-├── max_usage_per_customer
-├── created_at
-└── updated_at
+# 2. 編輯 .env，設定：
+#    - DATABASE_URL (PostgreSQL 連線字串)
+#    - AUTH_SECRET (執行 openssl rand -base64 32 產生)
+#    - AUTH_URL=http://localhost:3000
 
-cart_rule_usages
-├── id
-├── cart_rule_id (fk)
-├── coupon_code
-├── user_id (fk)
-├── order_id (fk)
-└── created_at
+# 3. 建立資料庫 (PostgreSQL)
+createdb simplcommerce
 
-catalog_rules
-├── id
-├── name
-├── description
-├── is_active
-├── start_date
-├── end_date
-├── discount_type
-├── discount_amount
-└── created_at
+# 4. 推送 schema 到資料庫
+pnpm db:push
+
+# 5. 啟動開發伺服器
+pnpm dev
 ```
 
 ---
@@ -535,42 +109,46 @@ src/
 ├── app/
 │   ├── (storefront)/           # 前台路由群組
 │   │   ├── page.tsx            # 首頁
-│   │   ├── products/
-│   │   ├── categories/
-│   │   ├── cart/
-│   │   ├── checkout/
-│   │   ├── account/
-│   │   └── ...
-│   ├── (admin)/admin/          # 後台路由群組
-│   │   ├── page.tsx            # 後台儀表板
-│   │   ├── products/
-│   │   ├── orders/
-│   │   ├── users/
-│   │   └── ...
-│   ├── api/                    # Hono API routes
-│   │   └── [[...route]]/
+│   │   ├── products/           # 商品列表、詳情
+│   │   ├── categories/         # 分類頁
+│   │   ├── cart/               # 購物車
+│   │   ├── checkout/           # 結帳
+│   │   ├── account/            # 會員中心
+│   │   ├── login/              # 登入
+│   │   └── register/           # 註冊
+│   ├── (admin)/admin/          # 後台路由群組 (需 admin/vendor 角色)
+│   │   ├── page.tsx            # 儀表板
+│   │   ├── products/           # 商品管理
+│   │   ├── categories/         # 分類管理
+│   │   ├── orders/             # 訂單管理
+│   │   ├── users/              # 用戶管理
+│   │   └── settings/           # 系統設定
+│   ├── api/
+│   │   ├── auth/[...nextauth]/ # Auth.js API
+│   │   └── [[...route]]/       # Hono API (如需要)
 │   └── layout.tsx
 ├── components/
-│   ├── ui/                     # 通用 UI 元件
+│   ├── ui/                     # 通用 UI 元件 (Button, Input, Card...)
 │   ├── storefront/             # 前台元件
 │   └── admin/                  # 後台元件
 ├── lib/
-│   ├── auth/                   # 認證相關
-│   ├── utils/                  # 工具函數
-│   └── constants/              # 常數
+│   ├── auth/index.ts           # Auth.js 設定
+│   └── utils.ts                # cn() 等工具函數
 ├── stores/                     # Zustand stores
-│   ├── cart.ts
-│   ├── auth.ts
+│   ├── cart.ts                 # 購物車狀態
 │   └── ...
 ├── actions/                    # Server Actions
-│   ├── products.ts
-│   ├── orders.ts
+│   ├── auth.ts                 # 註冊、登入
+│   ├── products.ts             # 商品 CRUD
+│   ├── cart.ts                 # 購物車操作
+│   ├── orders.ts               # 訂單操作
 │   └── ...
 ├── db/
+│   ├── index.ts                # DB 連線
 │   ├── schema/                 # Drizzle schema
-│   ├── migrations/             # 資料庫遷移
-│   └── index.ts                # 資料庫連線
+│   └── migrations/             # 資料庫遷移
 └── types/                      # TypeScript 型別
+    └── next-auth.d.ts          # Auth.js 型別擴展
 ```
 
 ---
@@ -579,50 +157,302 @@ src/
 
 ```bash
 # 開發
-pnpm dev
+pnpm dev              # 啟動開發伺服器 (Turbopack)
 
 # 建置
-pnpm build
+pnpm build            # 建置生產版本
+pnpm start            # 啟動生產伺服器
 
-# Lint & Format
-pnpm lint
-pnpm format
+# 程式碼品質
+pnpm lint             # 檢查程式碼
+pnpm lint:fix         # 自動修復
+pnpm format           # 格式化程式碼
+pnpm check            # lint + format
 
 # 資料庫
-pnpm db:generate   # 產生 migration
-pnpm db:migrate    # 執行 migration
-pnpm db:push       # 推送 schema
-pnpm db:studio     # 開啟 Drizzle Studio
+pnpm db:generate      # 產生 migration
+pnpm db:migrate       # 執行 migration
+pnpm db:push          # 推送 schema (開發用)
+pnpm db:studio        # 開啟 Drizzle Studio
 ```
 
 ---
 
-## 實作優先順序建議
+## 功能模組清單
 
-1. **Week 1-2**: Phase 1 核心基礎 (用戶系統、認證)
-2. **Week 3-4**: Phase 2 商品目錄 (商品、分類、品牌)
-3. **Week 5-6**: Phase 3-4 購物車與訂單
-4. **Week 7**: Phase 5-6 定價與配送
-5. **Week 8**: Phase 8 付款整合
-6. **Week 9**: Phase 9-10 CMS 與互動
-7. **Week 10+**: Phase 11-13 進階功能
+### Phase 1: 核心基礎 (Foundation)
+
+> **前置條件**: Auth.js 已設定，schema 已建立
+
+#### 1.1 用戶系統
+- [x] 註冊頁面 `/register`
+- [x] 登入頁面 `/login`
+- [x] 登出功能
+- [ ] 會員中心 `/account`
+- [ ] 個人資料編輯
+- [ ] 地址簿管理 (CRUD)
+- [ ] 預設帳單/配送地址設定
+
+#### 1.2 後台用戶管理
+- [ ] 用戶列表 `/admin/users`
+- [ ] 用戶編輯 (角色指派)
+- [ ] 客戶群組管理
+
+#### 1.3 地理資訊 (Seed Data)
+- [ ] 國家資料
+- [ ] 省份/州資料
+- [ ] 區域資料
+
+---
+
+### Phase 2: 商品目錄 (Catalog)
+
+#### 2.1 後台商品管理
+- [ ] 商品列表 `/admin/products`
+- [ ] 商品新增/編輯
+- [ ] 商品圖片上傳
+- [ ] 商品規格 (Specification)
+- [ ] 價格設定 (Price, OldPrice, SpecialPrice)
+- [ ] 商品選項 (Option) - 顏色、尺寸等
+- [ ] 商品屬性 (Attribute)
+- [ ] SKU/GTIN 管理
+- [ ] 庫存設定
+
+#### 2.2 後台分類管理
+- [ ] 分類列表 `/admin/categories`
+- [ ] 分類新增/編輯 (含階層)
+- [ ] 分類圖片上傳
+- [ ] SEO 設定
+
+#### 2.3 後台品牌管理
+- [ ] 品牌列表 `/admin/brands`
+- [ ] 品牌新增/編輯
+
+#### 2.4 前台商品展示
+- [ ] 商品列表頁 `/products`
+- [ ] 分類篩選
+- [ ] 品牌篩選
+- [ ] 價格排序
+- [ ] 商品詳情頁 `/products/[slug]`
+- [ ] 分類頁 `/categories/[slug]`
+
+---
+
+### Phase 3: 購物車與結帳
+
+#### 3.1 購物車
+- [ ] 購物車頁面 `/cart`
+- [ ] 加入購物車 (Server Action)
+- [ ] 更新數量
+- [ ] 移除商品
+- [ ] 購物車摘要元件
+- [ ] Zustand 購物車狀態
+
+#### 3.2 願望清單
+- [ ] 願望清單頁面 `/account/wishlist`
+- [ ] 加入/移除願望清單
+
+#### 3.3 結帳流程
+- [ ] 結帳頁面 `/checkout`
+- [ ] 配送地址選擇/新增
+- [ ] 帳單地址選擇/新增
+- [ ] 配送方式選擇
+- [ ] 付款方式選擇
+- [ ] 訂單確認
+
+---
+
+### Phase 4: 訂單管理
+
+#### 4.1 前台訂單
+- [ ] 訂單列表 `/account/orders`
+- [ ] 訂單詳情 `/account/orders/[id]`
+- [ ] 訂單追蹤
+
+#### 4.2 後台訂單管理
+- [ ] 訂單列表 `/admin/orders`
+- [ ] 訂單詳情/編輯
+- [ ] 訂單狀態更新
+- [ ] 訂單歷史記錄
+
+#### 4.3 發貨管理
+- [ ] 發貨單建立
+- [ ] 追蹤號碼輸入
+- [ ] 發貨狀態更新
+
+---
+
+### Phase 5: 定價與促銷
+
+#### 5.1 折價券管理
+- [ ] 折價券列表 `/admin/coupons`
+- [ ] 折價券新增/編輯
+- [ ] 固定/百分比折扣
+- [ ] 使用條件設定
+- [ ] 有效期間
+
+#### 5.2 前台折價券
+- [ ] 購物車套用折價券
+- [ ] 折價券驗證
+
+---
+
+### Phase 6: 配送與稅金
+
+#### 6.1 配送設定
+- [ ] 配送供應商管理
+- [ ] 運費規則設定
+
+#### 6.2 稅金設定
+- [ ] 稅務類別管理
+- [ ] 稅率設定
+
+---
+
+### Phase 7: 庫存管理
+
+- [ ] 倉庫管理
+- [ ] 庫存調整
+- [ ] 庫存歷史
+
+---
+
+### Phase 8: 付款整合
+
+- [ ] Stripe 整合
+- [ ] 付款回調處理
+- [ ] 付款狀態更新
+
+---
+
+### Phase 9: 內容管理 (CMS)
+
+#### 9.1 頁面管理
+- [ ] 頁面列表 `/admin/pages`
+- [ ] 頁面編輯器
+- [ ] 前台頁面顯示
+
+#### 9.2 選單管理
+- [ ] 選單設定
+
+---
+
+### Phase 10: 互動功能
+
+#### 10.1 評論系統
+- [ ] 商品評論提交
+- [ ] 評論列表顯示
+- [ ] 後台評論審核
+
+---
+
+### Phase 11: 供應商系統
+
+- [ ] 供應商儀表板
+- [ ] 供應商商品管理
+- [ ] 供應商訂單管理
+
+---
+
+### Phase 12: 進階功能
+
+- [ ] 商品搜尋
+- [ ] 商品比較
+- [ ] 最近瀏覽
+
+---
+
+### Phase 13: 多語系
+
+- [ ] i18n 設定
+- [ ] 語言切換
+
+---
+
+## 資料庫 Schema 概覽
+
+### users.ts
+| Table | 用途 |
+|-------|------|
+| users | 用戶 (擴展 Auth.js) |
+| accounts | OAuth 帳號 (Auth.js) |
+| sessions | Session (Auth.js) |
+| verificationTokens | 驗證 Token (Auth.js) |
+| vendors | 供應商 |
+| customerGroups | 客戶群組 |
+| customerGroupUsers | 客戶群組關聯 |
+| countries | 國家 |
+| stateOrProvinces | 省份/州 |
+| districts | 區域 |
+| addresses | 地址 |
+| userAddresses | 用戶地址關聯 |
+
+### catalog.ts
+| Table | 用途 |
+|-------|------|
+| taxClasses | 稅務類別 |
+| brands | 品牌 |
+| categories | 分類 (支援階層) |
+| productTemplates | 商品模板 |
+| productAttributeGroups | 屬性群組 |
+| productAttributes | 商品屬性 |
+| productOptions | 商品選項 (如顏色、尺寸) |
+| products | 商品 |
+| productCategories | 商品分類關聯 |
+| productMedia | 商品媒體 |
+| productAttributeValues | 商品屬性值 |
+| productOptionValues | 商品選項值 |
+| productOptionCombinations | 選項組合 (變體) |
+| productLinks | 商品關聯 |
+| productPriceHistory | 價格歷史 |
+| reviews | 評論 |
+| reviewReplies | 評論回覆 |
+
+### orders.ts
+| Table | 用途 |
+|-------|------|
+| cartItems | 購物車項目 |
+| wishlistItems | 願望清單 |
+| orders | 訂單 |
+| orderItems | 訂單項目 |
+| orderHistory | 訂單歷史 |
+| payments | 付款記錄 |
+| warehouses | 倉庫 |
+| stocks | 庫存 |
+| stockHistory | 庫存歷史 |
+| shipments | 發貨單 |
+| shipmentItems | 發貨項目 |
+| cartRules | 購物車規則 (折價券) |
+| cartRuleUsages | 折價券使用記錄 |
+| shippingProviders | 配送供應商 |
+| taxRates | 稅率 |
 
 ---
 
 ## 原始 SimplCommerce 模組對照
 
-| 原始模組 | 對應 Phase |
-|---------|-----------|
-| Core | Phase 1 |
-| Catalog | Phase 2 |
-| ShoppingCart, Checkouts | Phase 3 |
-| Orders, Shipments | Phase 4 |
-| Pricing | Phase 5 |
-| Shipping, Tax | Phase 6 |
-| Inventory | Phase 7 |
-| Payments, PaymentStripe, etc. | Phase 8 |
-| CMS, News | Phase 9 |
-| Reviews, Comments, Contacts | Phase 10 |
-| Vendors | Phase 11 |
-| Search, ProductComparison, etc. | Phase 12 |
-| Localization | Phase 13 |
+| 原始模組 | 對應 Phase | 狀態 |
+|---------|-----------|------|
+| Core | Phase 1 | Schema ✅ |
+| Catalog | Phase 2 | Schema ✅ |
+| ShoppingCart, Checkouts | Phase 3 | Schema ✅ |
+| Orders, Shipments | Phase 4 | Schema ✅ |
+| Pricing | Phase 5 | Schema ✅ |
+| Shipping, Tax | Phase 6 | Schema ✅ |
+| Inventory | Phase 7 | Schema ✅ |
+| Payments | Phase 8 | Schema ✅ |
+| CMS, News | Phase 9 | 待建 |
+| Reviews, Comments | Phase 10 | Schema ✅ |
+| Vendors | Phase 11 | Schema ✅ |
+| Search, ProductComparison | Phase 12 | 待建 |
+| Localization | Phase 13 | 待建 |
+
+---
+
+## 實作建議
+
+1. **從 Phase 1 開始** - 先完成註冊/登入 UI
+2. **建立 Seed Script** - 用於初始化測試資料
+3. **UI 元件** - 可考慮使用 shadcn/ui 或自建
+4. **Server Actions** - 優先使用，API routes 作為備用
+5. **測試** - 建議加入 Vitest 進行單元測試
