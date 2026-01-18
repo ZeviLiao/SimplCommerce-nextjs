@@ -15,22 +15,22 @@ This project is inspired by [SimplCommerce](https://github.com/simplcommerce/Sim
 
 ## Architecture
 
-**Feature-based structure** organized by domain modules:
+**Layered architecture** following Next.js App Router conventions:
 
-| Module | Routes | Components | Server Actions |
-|--------|--------|-----------|----------------|
-| **Catalog** | `/products`, `/categories`, `/brands` | Product listing, filters, detail | Product queries |
-| **Admin** | `/admin/products`, `/admin/categories` | Product/category forms, tables | CRUD operations |
-| **Auth** | `/login`, `/register`, `/account` | Login/register forms, profile | Authentication, session |
-| **Cart** | `/cart` | Cart items, quantity controls | Add/remove items |
-| **Checkout** | `/checkout` | Address, shipping, payment, review | Order creation |
-| **Wishlist** | `/account/wishlist` | Wishlist items grid | Add/remove wishlist |
+| Layer | Purpose | Examples |
+|-------|---------|----------|
+| **app/** | Routes & layouts | `(admin)/`, `(storefront)/`, `api/` |
+| **components/** | UI components | `admin/`, `products/`, `checkout/`, `ui/` |
+| **actions/** | Server actions | `admin/products.ts`, `auth.ts`, `checkout.ts` |
+| **db/** | Database | `schema/`, `migrations/` |
+| **lib/** | Utilities | `auth/`, `validators/` |
+| **stores/** | Client state | `cart-store.ts` |
 
-**Shared infrastructure:**
-- **Database**: Drizzle ORM schemas + PostgreSQL
-- **UI Components**: shadcn/ui + Tailwind CSS
-- **State**: Zustand for client state (cart)
-- **Validation**: Zod schemas for forms
+**Key patterns:**
+- Server Components for data fetching
+- Server Actions for mutations
+- Route Groups for layout separation (`(admin)`, `(storefront)`)
+- Shared UI components with shadcn/ui
 
 ## Getting Started
 
