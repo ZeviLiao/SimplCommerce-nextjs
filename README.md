@@ -54,14 +54,20 @@ git clone https://github.com/ZeviLiao/SimplCommerce-nextjs.git
 cd SimplCommerce-nextjs
 pnpm install
 
-# 2. Start PostgreSQL (if using Docker)
-docker run --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=simplcommerce -p 5432:5432 -d postgres:16
+# 2. Setup PostgreSQL with Docker
+docker run -d \
+  --name simplcommerce-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=simplcommerce \
+  -p 5432:5432 \
+  postgres:16
 
 # 3. Configure environment
 cp .env.example .env.local
-# Edit .env.local:
+# Edit .env.local and set:
 #   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/simplcommerce
-#   AUTH_SECRET=<generate with: openssl rand -base64 32>
+#   AUTH_SECRET=<run: openssl rand -base64 32>
 #   AUTH_URL=http://localhost:3000
 
 # 4. Initialize database
@@ -70,6 +76,15 @@ pnpm db:seed
 
 # 5. Start dev server
 pnpm dev
+```
+
+### Docker Database Commands
+
+```bash
+docker start simplcommerce-db   # Start database
+docker stop simplcommerce-db    # Stop database
+docker logs simplcommerce-db    # View logs
+docker exec -it simplcommerce-db psql -U postgres -d simplcommerce  # Connect to DB
 ```
 
 ### Test Accounts
