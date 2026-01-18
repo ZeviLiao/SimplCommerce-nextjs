@@ -54,15 +54,30 @@ export function ProductFilters({
 		router.push(`/products?${params.toString()}`);
 	};
 
-	const handleCategoryChange = (categoryId: string, checked: boolean) => {
+	const handleParentCategoryChange = (category: Category, checked: boolean) => {
 		const params = new URLSearchParams(searchParams);
 		let categories = selectedCategoryIds;
 
 		if (checked) {
-			categories = [...categories, categoryId];
+			// Add parent category
+			categories = [...categories, category.id];
+			// If has children, add all children
+			if (category.children && category.children.length > 0) {
+				const childIds = category.children.map((c) => c.id);
+				categories = [...categories, ...childIds];
+			}
 		} else {
-			categories = categories.filter((id) => id !== categoryId);
+			// Remove parent category
+			categories = categories.filter((id) => id !== category.id);
+			// If has children, remove all children
+			if (category.children && category.children.length > 0) {
+				const childIds = category.children.map((c) => c.id);
+				categories = categories.filter((id) => !childIds.includes(id));
+			}
 		}
+
+		// Remove duplicates
+		categories = [...new Set(categories)];
 
 		if (categories.length > 0) {
 			params.set("category", categories.join(","));
@@ -71,6 +86,59 @@ export function ProductFilters({
 		}
 		params.delete("page");
 		router.push(`/products?${params.toString()}`);
+	};
+
+	const handleChildCategoryChange = (
+		parentCategory: Category,
+		childId: string,
+		checked: boolean,
+	) => {
+		const params = new URLSearchParams(searchParams);
+		let categories = selectedCategoryIds;
+
+		if (checked) {
+			// Add child
+			categories = [...categories, childId];
+			// Check if all children are now selected
+			const allChildrenSelected = parentCategory.children?.every((c) => categories.includes(c.id));
+			// If all children selected, also select parent
+			if (allChildrenSelected) {
+				categories = [...categories, parentCategory.id];
+			}
+		} else {
+			// Remove child
+			categories = categories.filter((id) => id !== childId);
+			// Also remove parent if it was selected
+			categories = categories.filter((id) => id !== parentCategory.id);
+		}
+
+		// Remove duplicates
+		categories = [...new Set(categories)];
+
+		if (categories.length > 0) {
+			params.set("category", categories.join(","));
+		} else {
+			params.delete("category");
+		}
+		params.delete("page");
+		router.push(`/products?${params.toString()}`);
+	};
+
+	const getParentCheckboxState = (category: Category): boolean | "indeterminate" => {
+		if (!category.children || category.children.length === 0) {
+			return selectedCategoryIds.includes(category.id);
+		}
+
+		const childIds = category.children.map((c) => c.id);
+		const selectedChildrenCount = childIds.filter((id) => selectedCategoryIds.includes(id)).length;
+
+		if (selectedChildrenCount === 0) {
+			return false;
+		}
+		if (selectedChildrenCount === childIds.length) {
+			return true;
+		}
+		return "indeterminate";
 	};
 
 	const handleBrandChange = (brandId: string, checked: boolean) => {
@@ -135,9 +203,9 @@ export function ProductFilters({
 						<div key={category.id}>
 							<label className="flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-md hover:bg-muted transition-colors">
 								<Checkbox
-									checked={selectedCategoryIds.includes(category.id)}
+									checked={getParentCheckboxState(category)}
 									onCheckedChange={(checked) =>
-										handleCategoryChange(category.id, checked as boolean)
+										handleParentCategoryChange(category, checked as boolean)
 									}
 								/>
 								<span className="text-sm flex-1">
@@ -154,7 +222,7 @@ export function ProductFilters({
 											<Checkbox
 												checked={selectedCategoryIds.includes(child.id)}
 												onCheckedChange={(checked) =>
-													handleCategoryChange(child.id, checked as boolean)
+													handleChildCategoryChange(category, child.id, checked as boolean)
 												}
 											/>
 											<span className="text-sm flex-1">
