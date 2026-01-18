@@ -2,31 +2,52 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { loginUser } from "@/actions/auth";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
 	const router = useRouter();
 	const [error, setError] = useState<string>("");
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 
-	async function handleSubmit(formData: FormData) {
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
 		setError("");
+		setIsPending(true);
 
-		startTransition(async () => {
-			const result = await loginUser(formData);
+		const formData = new FormData(e.currentTarget);
+		const email = formData.get("email") as string;
+		const password = formData.get("password") as string;
+
+		if (!email || !password) {
+			setError("Email and password are required");
+			setIsPending(false);
+			return;
+		}
+
+		try {
+			const result = await authClient.signIn.email({
+				email: email.toLowerCase(),
+				password,
+			});
 
 			if (result.error) {
-				setError(result.error);
+				setError(result.error.message || "Invalid email or password");
+				setIsPending(false);
 			} else {
+				// Successfully logged in, redirect
 				router.push("/");
 				router.refresh();
 			}
-		});
+		} catch (err) {
+			console.error("Login error:", err);
+			setError("An error occurred during login");
+			setIsPending(false);
+		}
 	}
 
 	return (
@@ -37,7 +58,7 @@ export default function LoginPage() {
 					<CardDescription>Sign in to your account</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form action={handleSubmit} className="space-y-4">
+					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="email">Email</Label>
 							<Input

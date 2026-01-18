@@ -2,31 +2,60 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { registerUser } from "@/actions/auth";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
 export default function RegisterPage() {
 	const router = useRouter();
 	const [error, setError] = useState<string>("");
-	const [isPending, startTransition] = useTransition();
+	const [isPending, setIsPending] = useState(false);
 
-	async function handleSubmit(formData: FormData) {
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
 		setError("");
+		setIsPending(true);
 
-		startTransition(async () => {
-			const result = await registerUser(formData);
+		const formData = new FormData(e.currentTarget);
+		const name = formData.get("name") as string;
+		const email = formData.get("email") as string;
+		const password = formData.get("password") as string;
+
+		if (!name || !email || !password) {
+			setError("All fields are required");
+			setIsPending(false);
+			return;
+		}
+
+		if (password.length < 8) {
+			setError("Password must be at least 8 characters");
+			setIsPending(false);
+			return;
+		}
+
+		try {
+			const result = await authClient.signUp.email({
+				email: email.toLowerCase(),
+				password,
+				name,
+			});
 
 			if (result.error) {
-				setError(result.error);
+				setError(result.error.message || "Failed to create account");
+				setIsPending(false);
 			} else {
+				// Successfully registered and logged in, redirect
 				router.push("/");
 				router.refresh();
 			}
-		});
+		} catch (err) {
+			console.error("Registration error:", err);
+			setError("An error occurred during registration");
+			setIsPending(false);
+		}
 	}
 
 	return (
@@ -37,7 +66,7 @@ export default function RegisterPage() {
 					<CardDescription>Enter your information to get started</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form action={handleSubmit} className="space-y-4">
+					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="name">Name</Label>
 							<Input
