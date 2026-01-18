@@ -2,35 +2,42 @@
 
 This project is inspired by [SimplCommerce](https://github.com/simplcommerce/SimplCommerce), reimplementing its core e-commerce features using a modern Next.js tech stack.
 
-## Background
-
-[SimplCommerce](https://github.com/simplcommerce/SimplCommerce) is an open-source e-commerce platform built on ASP.NET Core, featuring a modular architecture and rich e-commerce functionality. This project aims to port its concepts and features to the Next.js ecosystem, providing a more modern frontend development experience and better performance.
-
 ## Tech Stack
 
-### Core Framework
-- **Next.js 16** - Full-stack React framework with App Router and Server Components
-- **React 19** - Latest React with React Compiler support
-- **TypeScript** - Type-safe JavaScript
+| Category | Technologies |
+|----------|-------------|
+| Frontend | Next.js 16, React 19, TypeScript |
+| UI | Tailwind CSS 4, shadcn/ui, Radix UI |
+| Backend | Hono, Next.js API Routes |
+| Database | PostgreSQL, Drizzle ORM |
+| State | Zustand |
+| DevTools | Biome, Turbopack, Husky |
 
-### UI Framework
-- **shadcn/ui** - Beautifully designed, accessible components built with Radix UI
-- **Tailwind CSS 4** - Utility-first CSS framework
+## Project Structure
 
-### Backend & Database
-- **Hono** - Lightweight, high-performance web framework for API routes
-- **Drizzle ORM** - TypeScript-first ORM
-- **PostgreSQL** - Relational database
-- **Vercel Postgres** - Serverless PostgreSQL
-
-### State Management
-- **Zustand** - Lightweight React state management library
-
-### Developer Tools
-- **Biome** - Fast linter and formatter (replaces ESLint + Prettier)
-- **Husky** - Git hooks management
-- **lint-staged** - Run linters on staged files
-- **Turbopack** - Fast bundler for Next.js development
+```
+src/
+├── actions/           # Server actions
+│   ├── admin/        # Admin operations
+│   ├── auth.ts       # Authentication
+│   ├── checkout.ts   # Checkout flow
+│   └── wishlist.ts   # Wishlist operations
+├── app/              # Next.js app router
+│   ├── (admin)/      # Admin dashboard routes
+│   ├── (storefront)/ # Customer-facing routes
+│   └── api/          # API routes
+├── components/       # React components
+│   ├── admin/        # Admin components
+│   ├── products/     # Product listing/filters
+│   ├── checkout/     # Checkout flow
+│   └── ui/           # shadcn/ui components
+├── db/               # Database
+│   ├── schema/       # Drizzle schema definitions
+│   └── migrations/   # Database migrations
+├── lib/              # Utilities
+│   └── validators/   # Zod schemas
+└── stores/           # Zustand stores
+```
 
 ## Getting Started
 
