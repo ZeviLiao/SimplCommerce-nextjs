@@ -8,21 +8,23 @@ type ShippingData = {
 	shippingMethod: string;
 };
 
+interface ShippingProvider {
+	id: string;
+	name: string;
+	code: string;
+	description: string | null;
+	configData: any;
+}
+
 interface ShippingMethodProps {
 	data: ShippingData;
+	providers: ShippingProvider[];
 	onUpdate: (data: Partial<ShippingData>) => void;
 	onNext: () => void;
 	onBack: () => void;
 }
 
-// TODO: Fetch from shipping providers API
-const shippingMethods = [
-	{ id: "standard", name: "Standard Shipping", price: 0, estimatedDays: "5-7 business days" },
-	{ id: "express", name: "Express Shipping", price: 15, estimatedDays: "2-3 business days" },
-	{ id: "overnight", name: "Overnight Shipping", price: 30, estimatedDays: "1 business day" },
-];
-
-export function ShippingMethod({ data, onUpdate, onNext, onBack }: ShippingMethodProps) {
+export function ShippingMethod({ data, providers, onUpdate, onNext, onBack }: ShippingMethodProps) {
 	const handleChange = (methodId: string) => {
 		onUpdate({ shippingMethod: methodId });
 	};
@@ -35,34 +37,51 @@ export function ShippingMethod({ data, onUpdate, onNext, onBack }: ShippingMetho
 		onNext();
 	};
 
+	const getProviderPrice = (provider: ShippingProvider) => {
+		const config = provider.configData as any;
+		if (!config) return 0;
+		return config.basePrice || 0;
+	};
+
 	return (
 		<div className="space-y-6">
 			<h2 className="text-xl font-semibold">Select Shipping Method</h2>
 
-			<RadioGroup value={data.shippingMethod} onValueChange={handleChange}>
-				{shippingMethods.map((method) => (
-					<div key={method.id} className="flex items-start space-x-3 p-4 border rounded-lg">
-						<RadioGroupItem value={method.id} id={method.id} />
-						<Label htmlFor={method.id} className="flex-1 cursor-pointer">
-							<div className="flex justify-between">
-								<div>
-									<div className="font-medium">{method.name}</div>
-									<div className="text-sm text-gray-600">{method.estimatedDays}</div>
-								</div>
-								<div className="font-semibold">
-									{method.price === 0 ? "Free" : `$${method.price.toFixed(2)}`}
-								</div>
+			{providers.length === 0 ? (
+				<div className="text-center text-muted-foreground py-8">No shipping methods available</div>
+			) : (
+				<RadioGroup value={data.shippingMethod} onValueChange={handleChange}>
+					{providers.map((provider) => {
+						const price = getProviderPrice(provider);
+						return (
+							<div key={provider.id} className="flex items-start space-x-3 p-4 border rounded-lg">
+								<RadioGroupItem value={provider.code} id={provider.code} />
+								<Label htmlFor={provider.code} className="flex-1 cursor-pointer">
+									<div className="flex justify-between">
+										<div>
+											<div className="font-medium">{provider.name}</div>
+											{provider.description && (
+												<div className="text-sm text-gray-600">{provider.description}</div>
+											)}
+										</div>
+										<div className="font-semibold">
+											{price === 0 ? "Free" : `$${price.toFixed(2)}`}
+										</div>
+									</div>
+								</Label>
 							</div>
-						</Label>
-					</div>
-				))}
-			</RadioGroup>
+						);
+					})}
+				</RadioGroup>
+			)}
 
 			<div className="flex justify-between">
 				<Button variant="outline" onClick={onBack}>
 					Back
 				</Button>
-				<Button onClick={handleNext}>Continue to Payment</Button>
+				<Button onClick={handleNext} disabled={providers.length === 0}>
+					Continue to Payment
+				</Button>
 			</div>
 		</div>
 	);

@@ -21,11 +21,25 @@ type CartItem = {
 	};
 };
 
+type Provider = {
+	id: string;
+	name: string;
+	code: string;
+	description: string | null;
+	configData: any;
+};
+
 interface CheckoutFlowProps {
 	cartItems: CartItem[];
+	shippingProviders: Provider[];
+	paymentProviders: Provider[];
 }
 
-export function CheckoutFlow({ cartItems }: CheckoutFlowProps) {
+export function CheckoutFlow({
+	cartItems,
+	shippingProviders,
+	paymentProviders,
+}: CheckoutFlowProps) {
 	const _router = useRouter();
 	const [currentStep, setCurrentStep] = useState<CheckoutStep>("address");
 	const [checkoutData, setCheckoutData] = useState({
@@ -110,6 +124,7 @@ export function CheckoutFlow({ cartItems }: CheckoutFlowProps) {
 					{currentStep === "shipping" && (
 						<ShippingMethod
 							data={checkoutData}
+							providers={shippingProviders}
 							onUpdate={updateData}
 							onNext={handleNext}
 							onBack={handleBack}
@@ -119,6 +134,7 @@ export function CheckoutFlow({ cartItems }: CheckoutFlowProps) {
 					{currentStep === "payment" && (
 						<PaymentMethod
 							data={checkoutData}
+							providers={paymentProviders}
 							onUpdate={updateData}
 							onNext={handleNext}
 							onBack={handleBack}

@@ -263,6 +263,21 @@ export const shippingProviders = pgTable("shipping_providers", {
 	isEnabled: boolean("is_enabled").default(true).notNull(),
 	configData: jsonb("config_data"),
 	displayOrder: integer("display_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// Payment Providers
+export const paymentProviders = pgTable("payment_providers", {
+	id: uuid("id").defaultRandom().primaryKey(),
+	name: text("name").notNull(),
+	code: text("code").unique().notNull(),
+	description: text("description"),
+	isEnabled: boolean("is_enabled").default(true).notNull(),
+	configData: jsonb("config_data"),
+	displayOrder: integer("display_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
 // Tax Rates
