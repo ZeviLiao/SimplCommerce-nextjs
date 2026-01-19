@@ -2,6 +2,7 @@ import { Eye, Package } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getOrderStats, getOrders, getOrdersCount } from "@/actions/admin/orders";
+import { OrderSearch } from "@/components/admin/orders/order-search";
 import { OrderStatusBadge } from "@/components/admin/orders/order-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -104,13 +105,14 @@ export default async function OrdersPage({ searchParams }: PageProps) {
 				</Card>
 			</div>
 
-			{/* Filters */}
+			{/* Filters and Search */}
 			<Card>
 				<CardHeader>
-					<CardTitle>Filter Orders</CardTitle>
-					<CardDescription>Filter orders by status</CardDescription>
+					<CardTitle>Search and Filter</CardTitle>
+					<CardDescription>Search orders and filter by status</CardDescription>
 				</CardHeader>
-				<CardContent>
+				<CardContent className="space-y-4">
+					<OrderSearch />
 					<div className="flex gap-4">
 						<Select defaultValue={status}>
 							<SelectTrigger className="w-[200px]">

@@ -1,9 +1,11 @@
 import { ArrowLeft, Package, User } from "lucide-react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById } from "@/actions/admin/orders";
 import { OrderStatusBadge } from "@/components/admin/orders/order-status-badge";
+import { UpdateOrderStatusDialog } from "@/components/admin/orders/update-order-status-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,6 +17,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
 	title: "Order Details - Admin",
@@ -29,9 +32,16 @@ interface PageProps {
 
 export default async function OrderDetailPage({ params }: PageProps) {
 	const { id } = await params;
-	const order = await getOrderById(id);
+	const [order, session] = await Promise.all([
+		getOrderById(id),
+		auth.api.getSession({ headers: await headers() }),
+	]);
 
 	if (!order) {
+		notFound();
+	}
+
+	if (!session?.user?.id) {
 		notFound();
 	}
 
@@ -55,7 +65,14 @@ export default async function OrderDetailPage({ params }: PageProps) {
 						</p>
 					</div>
 				</div>
-				<OrderStatusBadge status={order.status} size="lg" />
+				<div className="flex items-center gap-3">
+					<OrderStatusBadge status={order.status} size="lg" />
+					<UpdateOrderStatusDialog
+						orderId={order.id}
+						currentStatus={order.status}
+						userId={session.user.id}
+					/>
+				</div>
 			</div>
 
 			<div className="grid gap-6 md:grid-cols-3">
