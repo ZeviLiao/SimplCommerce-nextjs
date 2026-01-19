@@ -17,7 +17,16 @@ export async function getProducts(params?: {
 	const conditions = [eq(schema.products.isPublished, true)];
 
 	if (search) {
-		conditions.push(ilike(schema.products.name, `%${search}%`));
+		const searchConditions = [
+			ilike(schema.products.name, `%${search}%`),
+			ilike(schema.products.shortDescription, `%${search}%`),
+			ilike(schema.products.description, `%${search}%`),
+			ilike(schema.products.metaKeywords, `%${search}%`),
+		].filter(Boolean);
+
+		if (searchConditions.length > 0) {
+			conditions.push(or(...searchConditions)!);
+		}
 	}
 
 	if (brandIds && brandIds.length > 0) {
@@ -61,6 +70,51 @@ export async function getProducts(params?: {
 		.offset(offset);
 
 	return products;
+}
+
+export async function getProductsCount(params?: {
+	search?: string;
+	categoryIds?: string[];
+	brandIds?: string[];
+}) {
+	const { search, categoryIds, brandIds } = params || {};
+
+	// Build conditions array
+	const conditions = [eq(schema.products.isPublished, true)];
+
+	if (search) {
+		const searchConditions = [
+			ilike(schema.products.name, `%${search}%`),
+			ilike(schema.products.shortDescription, `%${search}%`),
+			ilike(schema.products.description, `%${search}%`),
+			ilike(schema.products.metaKeywords, `%${search}%`),
+		].filter(Boolean);
+
+		if (searchConditions.length > 0) {
+			conditions.push(or(...searchConditions)!);
+		}
+	}
+
+	if (brandIds && brandIds.length > 0) {
+		conditions.push(inArray(schema.products.brandId, brandIds));
+	}
+
+	// If category filter is applied, we need to join with productCategories
+	if (categoryIds && categoryIds.length > 0) {
+		const productIdsInCategories = db
+			.select({ productId: schema.productCategories.productId })
+			.from(schema.productCategories)
+			.where(inArray(schema.productCategories.categoryId, categoryIds));
+
+		conditions.push(inArray(schema.products.id, productIdsInCategories));
+	}
+
+	const result = await db
+		.select({ count: sql<number>`count(*)` })
+		.from(schema.products)
+		.where(and(...conditions));
+
+	return result[0]?.count || 0;
 }
 
 export async function getProductBySlug(slug: string) {

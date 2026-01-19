@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getProductBySlug } from "@/actions/products";
 import { AddToCartButton } from "@/components/products/add-to-cart-button";
 import { ProductImageGallery } from "@/components/products/product-image-gallery";
+import { ProductReviews } from "@/components/reviews/product-reviews";
+import { StarRating } from "@/components/reviews/star-rating";
 import { formatCurrency } from "@/lib/utils";
 
 interface PageProps {
@@ -58,22 +60,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
 					{/* Rating */}
 					{product.reviewsCount > 0 && (
 						<div className="flex items-center gap-2">
-							<div className="flex items-center">
-								{Array.from({ length: 5 }).map((_, i) => (
-									<span
-										key={i}
-										className={`text-lg ${
-											i < Math.round(Number(product.ratingAverage))
-												? "text-yellow-500"
-												: "text-gray-300"
-										}`}
-									>
-										★
-									</span>
-								))}
-							</div>
+							<StarRating rating={Number(product.ratingAverage)} size="md" showValue />
 							<span className="text-sm text-muted-foreground">
-								{Number(product.ratingAverage).toFixed(1)} ({product.reviewsCount} reviews)
+								({product.reviewsCount} {product.reviewsCount === 1 ? "review" : "reviews"})
 							</span>
 						</div>
 					)}
@@ -164,6 +153,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
 					/>
 				</div>
 			)}
+
+			{/* Product Reviews */}
+			<ProductReviews productId={product.id} productName={product.name} />
 		</div>
 	);
 }

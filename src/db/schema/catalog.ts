@@ -4,6 +4,7 @@ import {
 	decimal,
 	integer,
 	jsonb,
+	pgEnum,
 	pgTable,
 	primaryKey,
 	text,
@@ -216,34 +217,41 @@ export const productPriceHistory = pgTable("product_price_history", {
 });
 
 // Reviews
+export const reviewStatusEnum = pgEnum("review_status", ["pending", "approved", "not_approved"]);
+
 export const reviews = pgTable("reviews", {
 	id: uuid("id").defaultRandom().primaryKey(),
 	productId: uuid("product_id")
 		.notNull()
 		.references(() => products.id, { onDelete: "cascade" }),
-	userId: uuid("user_id")
+	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	rating: integer("rating").notNull(),
 	title: text("title"),
-	comment: text("comment"),
-	status: text("status").default("pending").notNull(), // 'pending' | 'approved' | 'rejected'
+	comment: text("comment").notNull(),
+	reviewerName: text("reviewer_name").notNull(),
+	status: reviewStatusEnum("status").default("pending").notNull(),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
 // Review Replies
-export const reviewReplies = pgTable("review_replies", {
+export const replyStatusEnum = pgEnum("reply_status", ["pending", "approved", "not_approved"]);
+
+export const replies = pgTable("replies", {
 	id: uuid("id").defaultRandom().primaryKey(),
 	reviewId: uuid("review_id")
 		.notNull()
 		.references(() => reviews.id, { onDelete: "cascade" }),
-	userId: uuid("user_id")
+	userId: text("user_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
 	comment: text("comment").notNull(),
-	status: text("status").default("approved").notNull(),
+	replierName: text("replier_name").notNull(),
+	status: replyStatusEnum("status").default("pending").notNull(),
 	createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
 });
 
 // Relations
@@ -403,16 +411,16 @@ export const reviewsRelations = relations(reviews, ({ one, many }) => ({
 		fields: [reviews.userId],
 		references: [user.id],
 	}),
-	replies: many(reviewReplies),
+	replies: many(replies),
 }));
 
-export const reviewRepliesRelations = relations(reviewReplies, ({ one }) => ({
+export const repliesRelations = relations(replies, ({ one }) => ({
 	review: one(reviews, {
-		fields: [reviewReplies.reviewId],
+		fields: [replies.reviewId],
 		references: [reviews.id],
 	}),
 	user: one(user, {
-		fields: [reviewReplies.userId],
+		fields: [replies.userId],
 		references: [user.id],
 	}),
 }));

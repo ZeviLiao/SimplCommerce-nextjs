@@ -27,6 +27,7 @@ interface ProductFiltersProps {
 	selectedCategoryIds?: string[];
 	selectedBrandIds?: string[];
 	searchQuery?: string;
+	isSearchPage?: boolean;
 }
 
 export function ProductFilters({
@@ -35,6 +36,7 @@ export function ProductFilters({
 	selectedCategoryIds = [],
 	selectedBrandIds = [],
 	searchQuery,
+	isSearchPage = false,
 }: ProductFiltersProps) {
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -45,13 +47,16 @@ export function ProductFilters({
 		const search = formData.get("search") as string;
 
 		const params = new URLSearchParams(searchParams);
+		const searchParamKey = isSearchPage ? "q" : "search";
+		const basePath = isSearchPage ? "/search" : "/products";
+
 		if (search) {
-			params.set("search", search);
+			params.set(searchParamKey, search);
 		} else {
-			params.delete("search");
+			params.delete(searchParamKey);
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`, { scroll: false });
+		router.push(`${basePath}?${params.toString()}`, { scroll: false });
 	};
 
 	const handleParentCategoryChange = (category: Category, checked: boolean) => {
@@ -85,7 +90,8 @@ export function ProductFilters({
 			params.delete("category");
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`, { scroll: false });
+		const basePath = isSearchPage ? "/search" : "/products";
+		router.push(`${basePath}?${params.toString()}`, { scroll: false });
 	};
 
 	const handleChildCategoryChange = (
@@ -121,7 +127,8 @@ export function ProductFilters({
 			params.delete("category");
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`, { scroll: false });
+		const basePath = isSearchPage ? "/search" : "/products";
+		router.push(`${basePath}?${params.toString()}`, { scroll: false });
 	};
 
 	const getParentCheckboxState = (category: Category): boolean | "indeterminate" => {
@@ -157,11 +164,13 @@ export function ProductFilters({
 			params.delete("brand");
 		}
 		params.delete("page");
-		router.push(`/products?${params.toString()}`, { scroll: false });
+		const basePath = isSearchPage ? "/search" : "/products";
+		router.push(`${basePath}?${params.toString()}`, { scroll: false });
 	};
 
 	const clearFilters = () => {
-		router.push("/products");
+		const basePath = isSearchPage ? "/search" : "/products";
+		router.push(basePath);
 	};
 
 	const hasFilters = selectedCategoryIds.length > 0 || selectedBrandIds.length > 0 || searchQuery;
